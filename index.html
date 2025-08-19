@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin RE - مولد صور المنتجات المتطور</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .control-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .preview-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 20px;
+        }
+
+        .section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .section h3 {
+            color: #5a67d8;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .upload-area {
+            border: 3px dashed #d1d5db;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: #f9fafb;
+        }
+
+        .upload-area.dragover {
+            border-color: #5a67d8;
+            background: #edf2f7;
+            transform: scale(1.02);
+        }
+
+        .upload-area:hover {
+            border-color: #5a67d8;
+            background: #edf2f7;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #9ca3af;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #374151;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            background: #fafafa;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #5a67d8;
+            background: white;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .price-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .color-picker-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+        }
+
+        .color-option {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid #e5e7eb;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .color-option.active {
+            border-color: #5a67d8;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(90, 103, 216, 0.5);
+        }
+
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+        }
+
+        .template-option {
+            aspect-ratio: 1;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f9fafb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #6b7280;
+        }
+
+        .template-option.active {
+            border-color: #5a67d8;
+            background: #edf2f7;
+            color: #5a67d8;
+        }
+
+        .canvas-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #previewCanvas {
+            max-width: 100%;
+            border: 2px solid #e5e7eb;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            min-width: 120px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #5a67d8, #667eea);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(90, 103, 216, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+        }
+
+        .range-input {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #5a67d8;
+        }
+
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #5a67d8;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+
+        .discount-badge {
+            background: #ef4444;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .price-display {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .original-price {
+            text-decoration: line-through;
+            color: #9ca3af;
+        }
+
+        .final-price {
+            color: #059669;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .developer-link {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .developer-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(90, 103, 216, 0.4);
+            text-decoration: none;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Admin RE</h1>
+            <p>مولد صور المنتجات المتطور - أنشئ صور منتجات احترافية في ثوانٍ</p>
+        </div>
+
+        <div class="main-content">
+            <div class="control-panel">
+                <!-- Image Upload Section -->
+                <div class="section">
+                    <h3>📸 رفع صورة المنتج</h3>
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">📁</div>
+                        <p>اسحب وأفلت صورة المنتج هنا أو اضغط للاختيار</p>
+                        <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                    </div>
+                </div>
+
+                <!-- Product Info Section -->
+                <div class="section">
+                    <h3>📝 معلومات المنتج</h3>
+                    <div class="form-group">
+                        <label for="productName">اسم المنتج</label>
+                        <input type="text" id="productName" placeholder="أدخل اسم المنتج">
+                    </div>
+                    <div class="form-group">
+                        <label for="productDescription">وصف المنتج</label>
+                        <textarea id="productDescription" placeholder="أدخل وصف المنتج"></textarea>
+                    </div>
+                </div>
+
+                <!-- Pricing Section -->
+                <div class="section">
+                    <h3>💰 التسعير</h3>
+                    <div class="price-group">
+                        <div class="form-group">
+                            <label for="originalPrice">السعر الأصلي</label>
+                            <input type="number" id="originalPrice" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="discountPrice">السعر بعد الخصم</label>
+                            <input type="number" id="discountPrice" placeholder="0.00" step="0.01">
+                        </div>
+                    </div>
+                    <div class="price-display" id="priceDisplay">
+                        <!-- Price display will be updated here -->
+                    </div>
+                </div>
+
+                <!-- Design Options -->
+                <div class="section">
+                    <h3>🎨 خيارات التصميم</h3>
+                    <div class="form-group">
+                        <label>اختر قالب التصميم</label>
+                        <div class="template-grid">
+                            <div class="template-option active" data-template="modern">عصري</div>
+                            <div class="template-option" data-template="elegant">أنيق</div>
+                            <div class="template-option" data-template="minimal">بسيط</div>
+                            <div class="template-option" data-template="bold">جريء</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>نظام الألوان</label>
+                        <div class="color-picker-group">
+                            <div class="color-option active" style="background: linear-gradient(135deg, #667eea, #764ba2)" data-color="blue"></div>
+                            <div class="color-option" style="background: linear-gradient(135deg, #f093fb, #f5576c)" data-color="pink"></div>
+                            <div class="color-option" style="background: linear-gradient(135deg, #4facfe, #00f2fe)" data-color="cyan"></div>
+                            <div class="color-option" style="background: linear-gradient(135deg, #43e97b, #38f9d7)" data-color="green"></div>
+                            <div class="color-option" style="background: linear-gradient(135deg, #fa709a, #fee140)" data-color="orange"></div>
+                            <div class="color-option" style="background: linear-gradient(135deg, #a8edea, #fed6e3)" data-color="pastel"></div>
+                        </div>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="removeBackground" checked>
+                        <label for="removeBackground">إزالة الخلفية تلقائياً</label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="textSize">حجم النص</label>
+                        <input type="range" id="textSize" class="range-input" min="20" max="60" value="32">
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="generateImage()">
+                        ✨ إنشاء الصورة
+                    </button>
+                    <button class="btn btn-secondary" onclick="downloadImage()">
+                        📥 تحميل PNG
+                    </button>
+                    <button class="btn btn-secondary" onclick="downloadImageJPG()">
+                        📥 تحميل JPG
+                    </button>
+                    <button class="btn btn-danger" onclick="resetAll()">
+                        🔄 إعادة تعيين
+                    </button>
+                </div>
+            </div>
+
+            <div class="preview-panel">
+                <div class="section">
+                    <h3>👁️ معاينة الصورة</h3>
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        <p>جاري إنشاء الصورة...</p>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="previewCanvas" width="600" height="600"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Developer Link -->
+    <a href="https://ahmedmehleb1.github.io/1/" target="_blank" class="developer-link">
+        👨‍💻 حول المطور
+    </a>
+
+    <script>
+        // Global variables
+        let uploadedImage = null;
+        let currentTemplate = 'modern';
+        let currentColorScheme = 'blue';
+        const canvas = document.getElementById('previewCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Color schemes
+        const colorSchemes = {
+            blue: {
+                primary: '#667eea',
+                secondary: '#764ba2',
+                accent: '#5a67d8',
+                text: '#1a202c',
+                light: '#edf2f7'
+            },
+            pink: {
+                primary: '#f093fb',
+                secondary: '#f5576c',
+                accent: '#e53e3e',
+                text: '#1a202c',
+                light: '#fed7e2'
+            },
+            cyan: {
+                primary: '#4facfe',
+                secondary: '#00f2fe',
+                accent: '#0891b2',
+                text: '#1a202c',
+                light: '#cffafe'
+            },
+            green: {
+                primary: '#43e97b',
+                secondary: '#38f9d7',
+                accent: '#059669',
+                text: '#1a202c',
+                light: '#d1fae5'
+            },
+            orange: {
+                primary: '#fa709a',
+                secondary: '#fee140',
+                accent: '#f59e0b',
+                text: '#1a202c',
+                light: '#fef3c7'
+            },
+            pastel: {
+                primary: '#a8edea',
+                secondary: '#fed6e3',
+                accent: '#8b5cf6',
+                text: '#1a202c',
+                light: '#f3f4f6'
+            }
+        };
+
+        // Initialize the application
+        function init() {
+            setupEventListeners();
+            drawPlaceholder();
+            updatePriceDisplay();
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            const uploadArea = document.getElementById('uploadArea');
+            const imageInput = document.getElementById('imageInput');
+
+            // File upload events
+            uploadArea.addEventListener('click', () => imageInput.click());
+            uploadArea.addEventListener('dragover', handleDragOver);
+            uploadArea.addEventListener('dragleave', handleDragLeave);
+            uploadArea.addEventListener('drop', handleDrop);
+            imageInput.addEventListener('change', handleFileSelect);
+
+            // Form inputs
+            document.getElementById('productName').addEventListener('input', updatePreview);
+            document.getElementById('productDescription').addEventListener('input', updatePreview);
+            document.getElementById('originalPrice').addEventListener('input', () => {
+                updatePriceDisplay();
+                updatePreview();
+            });
+            document.getElementById('discountPrice').addEventListener('input', () => {
+                updatePriceDisplay();
+                updatePreview();
+            });
+            document.getElementById('textSize').addEventListener('input', updatePreview);
+
+            // Template selection
+            document.querySelectorAll('.template-option').forEach(option => {
+                option.addEventListener('click', (e) => {
+                    document.querySelectorAll('.template-option').forEach(opt => opt.classList.remove('active'));
+                    e.target.classList.add('active');
+                    currentTemplate = e.target.dataset.template;
+                    updatePreview();
+                });
+            });
+
+            // Color scheme selection
+            document.querySelectorAll('.color-option').forEach(option => {
+                option.addEventListener('click', (e) => {
+                    document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));
+                    e.target.classList.add('active');
+                    currentColorScheme = e.target.dataset.color;
+                    updatePreview();
+                });
+            });
+        }
+
+        // Drag and drop handlers
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                processImageFile(files[0]);
+            }
+        }
+
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                processImageFile(files[0]);
+            }
+        }
+
+        // Process uploaded image
+        function processImageFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('يرجى اختيار ملف صورة صحيح');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    uploadedImage = img;
+                    updatePreview();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Draw placeholder
+        function drawPlaceholder() {
+            ctx.fillStyle = '#f3f4f6';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#9ca3af';
+            ctx.font = '24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('قم برفع صورة المنتج للبدء', canvas.width / 2, canvas.height / 2);
+        }
+
+        // Update price display
+        function updatePriceDisplay() {
+            const originalPrice = parseFloat(document.getElementById('originalPrice').value) || 0;
+            const discountPrice = parseFloat(document.getElementById('discountPrice').value) || 0;
+            const priceDisplay = document.getElementById('priceDisplay');
+
+            if (originalPrice > 0 && discountPrice > 0 && discountPrice < originalPrice) {
+                const discountPercent = Math.round(((originalPrice - discountPrice) / originalPrice) * 100);
+                priceDisplay.innerHTML = `
+                    <span class="original-price">$${originalPrice.toFixed(2)}</span>
+                    <span class="final-price">$${discountPrice.toFixed(2)}</span>
+                    <span class="discount-badge">خصم ${discountPercent}%</span>
+                `;
+            } else if (originalPrice > 0) {
+                priceDisplay.innerHTML = `<span class="final-price">$${originalPrice.toFixed(2)}</span>`;
+            } else {
+                priceDisplay.innerHTML = '';
+            }
+        }
+
+        // Remove background (simplified version)
+        function removeBackground(imageData) {
+            const data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+                
+                // Simple white background removal
+                if (r > 240 && g > 240 && b > 240) {
+                    data[i + 3] = 0; // Make transparent
+                }
+            }
+            return imageData;
+        }
+
+        // Generate the product image
+        function generateImage() {
+            if (!uploadedImage) {
+                alert('يرجى رفع صورة المنتج أولاً');
+                return;
+            }
+
+            document.getElementById('loading').style.display = 'block';
+            
+            setTimeout(() => {
+                updatePreview();
+                document.getElementById('loading').style.display = 'none';
+            }, 1000);
+        }
+
+        // Update preview
+        function updatePreview() {
+            if (!uploadedImage) {
+                drawPlaceholder();
+                return;
+            }
+
+            const scheme = colorSchemes[currentColorScheme];
+            const textSize = parseInt(document.getElementById('textSize').value);
+            const productName = document.getElementById('productName').value || 'اسم المنتج';
+            const productDescription = document.getElementById('productDescription').value || 'وصف المنتج';
+            const originalPrice = parseFloat(document.getElementById('originalPrice').value) || 0;
+            const discountPrice = parseFloat(document.getElementById('discountPrice').value) || 0;
+            const removeBackground = document.getElementById('removeBackground').checked;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw background based on template
+            drawBackground(scheme);
+
+            // Process and draw product image
+            drawProductImage(removeBackground);
+
+            // Draw text overlays based on template
+            drawTextOverlays(scheme, textSize, productName, productDescription, originalPrice, discountPrice);
+        }
+
+        // Draw background
+        function drawBackground(scheme) {
+            switch (currentTemplate) {
+                case 'modern':
+                    drawModernBackground(scheme);
+                    break;
+                case 'elegant':
+                    drawElegantBackground(scheme);
+                    break;
+                case 'minimal':
+                    drawMinimalBackground(scheme);
+                    break;
+                case 'bold':
+                    drawBoldBackground(scheme);
+                    break;
+            }
+        }
+
+        function drawModernBackground(scheme) {
+            // Gradient background
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, scheme.light);
+            gradient.addColorStop(1, '#ffffff');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Decorative elements
+            ctx.fillStyle = scheme.primary + '20';
+            ctx.beginPath();
+            ctx.arc(canvas.width - 100, 100, 80, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = scheme.secondary + '15';
+            ctx.beginPath();
+            ctx.arc(100, canvas.height - 100, 60, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawElegantBackground(scheme) {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Border
+            ctx.strokeStyle = scheme.primary;
+            ctx.lineWidth = 3;
+            ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+        }
+
+        function drawMinimalBackground(scheme) {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function drawBoldBackground(scheme) {
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, scheme.primary);
+            gradient.addColorStop(1, scheme.secondary);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Draw product image
+        function drawProductImage(removeBackground) {
+            const maxWidth = 300;
+            const maxHeight = 300;
+            const imgRatio = uploadedImage.width / uploadedImage.height;
+            
+            let drawWidth = maxWidth;
+            let drawHeight = maxHeight;
+            
+            if (imgRatio > 1) {
+                drawHeight = maxWidth / imgRatio;
+            } else {
+                drawWidth = maxHeight * imgRatio;
+            }
+
+            const x = (canvas.width - drawWidth) / 2;
+            const y = 80;
+
+            if (removeBackground) {
+                // Simple background removal by drawing with composite operation
+                ctx.save();
+                ctx.globalCompositeOperation = 'multiply';
+            }
+
+            ctx.drawImage(uploadedImage, x, y, drawWidth, drawHeight);
+            
+            if (removeBackground) {
+                ctx.restore();
+            }
+
+            // Add shadow
+            ctx.save();
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+            ctx.shadowBlur = 20;
+            ctx.shadowOffsetY = 10;
+            ctx.strokeStyle = 'transparent';
+            ctx.strokeRect(x, y, drawWidth, drawHeight);
+            ctx.restore();
+        }
+
+        // Draw text overlays
+        function drawTextOverlays(scheme, textSize, productName, productDescription, originalPrice, discountPrice) {
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // Product name
+            ctx.fillStyle = currentTemplate === 'bold' ? '#ffffff' : scheme.text;
+            ctx.font = `bold ${textSize}px Arial`;
+            ctx.fillText(productName, canvas.width / 2, 450);
+
+            // Product description
+            ctx.fillStyle = currentTemplate === 'bold' ? '#ffffff' : '#666666';
+            ctx.font = `${textSize - 8}px Arial`;
+            wrapText(ctx, productDescription, canvas.width / 2, 490, canvas.width - 100, textSize - 4);
+
+            // Price display
+            if (originalPrice > 0) {
+                const priceY = 540;
+                
+                if (discountPrice > 0 && discountPrice < originalPrice) {
+                    // Original price (strikethrough)
+                    ctx.fillStyle = '#999999';
+                    ctx.font = `${textSize - 6}px Arial`;
+                    const originalText = `$${originalPrice.toFixed(2)}`;
+                    ctx.fillText(originalText, canvas.width / 2 - 60, priceY);
+                    
+                    // Strikethrough line
+                    const textWidth = ctx.measureText(originalText).width;
+                    ctx.strokeStyle = '#999999';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(canvas.width / 2 - 60 - textWidth / 2, priceY);
+                    ctx.lineTo(canvas.width / 2 - 60 + textWidth / 2, priceY);
+                    ctx.stroke();
+
+                    // Discounted price
+                    ctx.fillStyle = scheme.accent;
+                    ctx.font = `bold ${textSize}px Arial`;
+                    ctx.fillText(`$${discountPrice.toFixed(2)}`, canvas.width / 2 + 60, priceY);
+
+                    // Discount badge
+                    const discountPercent = Math.round(((originalPrice - discountPrice) / originalPrice) * 100);
+                    drawDiscountBadge(canvas.width / 2 + 120, priceY - 20, `${discountPercent}%`);
+                } else {
+                    ctx.fillStyle = scheme.accent;
+                    ctx.font = `bold ${textSize}px Arial`;
+                    ctx.fillText(`$${originalPrice.toFixed(2)}`, canvas.width / 2, priceY);
+                }
+            }
+        }
+
+        // Draw discount badge
+        function drawDiscountBadge(x, y, text) {
+            ctx.save();
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.roundRect(x - 25, y - 15, 50, 30, 15);
+            ctx.fill();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(text, x, y + 5);
+            ctx.restore();
+        }
+
+        // Wrap text function
+        function wrapText(context, text, x, y, maxWidth, lineHeight) {
+            const words = text.split(' ');
+            let line = '';
+            let currentY = y;
+
+            for (let n = 0; n < words.length; n++) {
+                const testLine = line + words[n] + ' ';
+                const metrics = context.measureText(testLine);
+                const testWidth = metrics.width;
+                
+                if (testWidth > maxWidth && n > 0) {
+                    context.fillText(line, x, currentY);
+                    line = words[n] + ' ';
+                    currentY += lineHeight;
+                } else {
+                    line = testLine;
+                }
+            }
+            context.fillText(line, x, currentY);
+        }
+
+        // Add roundRect to canvas context if not available
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+                this.beginPath();
+                this.moveTo(x + radius, y);
+                this.lineTo(x + width - radius, y);
+                this.quadraticCurveTo(x + width, y, x + width, y + radius);
+                this.lineTo(x + width, y + height - radius);
+                this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+                this.lineTo(x + radius, y + height);
+                this.quadraticCurveTo(x, y + height, x, y + height - radius);
+                this.lineTo(x, y + radius);
+                this.quadraticCurveTo(x, y, x + radius, y);
+                this.closePath();
+            };
+        }
+
+        // Download functions
+        function downloadImage() {
+            const link = document.createElement('a');
+            link.download = 'product-image.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        function downloadImageJPG() {
+            const link = document.createElement('a');
+            link.download = 'product-image.jpg';
+            link.href = canvas.toDataURL('image/jpeg', 0.9);
+            link.click();
+        }
+
+        // Reset all
+        function resetAll() {
+            uploadedImage = null;
+            document.getElementById('imageInput').value = '';
+            document.getElementById('productName').value = '';
+            document.getElementById('productDescription').value = '';
+            document.getElementById('originalPrice').value = '';
+            document.getElementById('discountPrice').value = '';
+            document.getElementById('textSize').value = 32;
+            
+            // Reset template and color scheme
+            document.querySelectorAll('.template-option').forEach(opt => opt.classList.remove('active'));
+            document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));
+            document.querySelector('.template-option[data-template="modern"]').classList.add('active');
+            document.querySelector('.color-option[data-color="blue"]').classList.add('active');
+            
+            currentTemplate = 'modern';
+            currentColorScheme = 'blue';
+            
+            updatePriceDisplay();
+            drawPlaceholder();
+        }
+
+        // Initialize the application when the page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
