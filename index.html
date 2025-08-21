@@ -1,986 +1,2158 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin RE - مولد صور المنتجات المتطور</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: #333;
-            overflow-x: hidden;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            color: white;
-        }
-
-        .header h1 {
-            font-size: 3rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            align-items: start;
-        }
-
-        .control-panel {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
-        }
-
-        .preview-panel {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
-            position: sticky;
-            top: 20px;
-        }
-
-        .section {
-            margin-bottom: 25px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-
-        .section:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-        }
-
-        .section h3 {
-            color: #5a67d8;
-            margin-bottom: 15px;
-            font-size: 1.3rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .upload-area {
-            border: 3px dashed #d1d5db;
-            border-radius: 15px;
-            padding: 40px;
-            text-align: center;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            background: #f9fafb;
-        }
-
-        .upload-area.dragover {
-            border-color: #5a67d8;
-            background: #edf2f7;
-            transform: scale(1.02);
-        }
-
-        .upload-area:hover {
-            border-color: #5a67d8;
-            background: #edf2f7;
-        }
-
-        .upload-icon {
-            font-size: 3rem;
-            color: #9ca3af;
-            margin-bottom: 15px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #374151;
-        }
-
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-            background: #fafafa;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #5a67d8;
-            background: white;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .price-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .color-picker-group {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-            gap: 10px;
-        }
-
-        .color-option {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            border: 3px solid #e5e7eb;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .color-option.active {
-            border-color: #5a67d8;
-            transform: scale(1.1);
-            box-shadow: 0 0 20px rgba(90, 103, 216, 0.5);
-        }
-
-        .template-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 15px;
-        }
-
-        .template-option {
-            aspect-ratio: 1;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: #f9fafb;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: #6b7280;
-        }
-
-        .template-option.active {
-            border-color: #5a67d8;
-            background: #edf2f7;
-            color: #5a67d8;
-        }
-
-        .canvas-container {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        #previewCanvas {
-            max-width: 100%;
-            border: 2px solid #e5e7eb;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            justify-content: center;
-            min-width: 120px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #5a67d8, #667eea);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(90, 103, 216, 0.4);
-        }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #f59e0b, #f97316);
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: white;
-        }
-
-        .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
-        }
-
-        .range-input {
-            width: 100%;
-            margin: 10px 0;
-        }
-
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin: 10px 0;
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-            color: #5a67d8;
-        }
-
-        .spinner {
-            border: 4px solid #f3f4f6;
-            border-top: 4px solid #5a67d8;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-            }
-            
-            .btn {
-                width: 100%;
-            }
-        }
-
-        .discount-badge {
-            background: #ef4444;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: bold;
-        }
-
-        .price-display {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .original-price {
-            text-decoration: line-through;
-            color: #9ca3af;
-        }
-
-        .final-price {
-            color: #059669;
-            font-weight: bold;
-            font-size: 1.2em;
-        }
-
-        .developer-link {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 25px;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: bold;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-
-        .developer-link:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(90, 103, 216, 0.4);
-            text-decoration: none;
-            color: white;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🎨 Admin RE</h1>
-            <p>مولد صور المنتجات المتطور - أنشئ صور منتجات احترافية في ثوانٍ</p>
-        </div>
-
-        <div class="main-content">
-            <div class="control-panel">
-                <!-- Image Upload Section -->
-                <div class="section">
-                    <h3>📸 رفع صورة المنتج</h3>
-                    <div class="upload-area" id="uploadArea">
-                        <div class="upload-icon">📁</div>
-                        <p>اسحب وأفلت صورة المنتج هنا أو اضغط للاختيار</p>
-                        <input type="file" id="imageInput" accept="image/*" style="display: none;">
-                    </div>
-                </div>
-
-                <!-- Product Info Section -->
-                <div class="section">
-                    <h3>📝 معلومات المنتج</h3>
-                    <div class="form-group">
-                        <label for="productName">اسم المنتج</label>
-                        <input type="text" id="productName" placeholder="أدخل اسم المنتج">
-                    </div>
-                    <div class="form-group">
-                        <label for="productDescription">وصف المنتج</label>
-                        <textarea id="productDescription" placeholder="أدخل وصف المنتج"></textarea>
-                    </div>
-                </div>
-
-                <!-- Pricing Section -->
-                <div class="section">
-                    <h3>💰 التسعير</h3>
-                    <div class="price-group">
-                        <div class="form-group">
-                            <label for="originalPrice">السعر الأصلي</label>
-                            <input type="number" id="originalPrice" placeholder="0.00" step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label for="discountPrice">السعر بعد الخصم</label>
-                            <input type="number" id="discountPrice" placeholder="0.00" step="0.01">
-                        </div>
-                    </div>
-                    <div class="price-display" id="priceDisplay">
-                        <!-- Price display will be updated here -->
-                    </div>
-                </div>
-
-                <!-- Design Options -->
-                <div class="section">
-                    <h3>🎨 خيارات التصميم</h3>
-                    <div class="form-group">
-                        <label>اختر قالب التصميم</label>
-                        <div class="template-grid">
-                            <div class="template-option active" data-template="modern">عصري</div>
-                            <div class="template-option" data-template="elegant">أنيق</div>
-                            <div class="template-option" data-template="minimal">بسيط</div>
-                            <div class="template-option" data-template="bold">جريء</div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>نظام الألوان</label>
-                        <div class="color-picker-group">
-                            <div class="color-option active" style="background: linear-gradient(135deg, #667eea, #764ba2)" data-color="blue"></div>
-                            <div class="color-option" style="background: linear-gradient(135deg, #f093fb, #f5576c)" data-color="pink"></div>
-                            <div class="color-option" style="background: linear-gradient(135deg, #4facfe, #00f2fe)" data-color="cyan"></div>
-                            <div class="color-option" style="background: linear-gradient(135deg, #43e97b, #38f9d7)" data-color="green"></div>
-                            <div class="color-option" style="background: linear-gradient(135deg, #fa709a, #fee140)" data-color="orange"></div>
-                            <div class="color-option" style="background: linear-gradient(135deg, #a8edea, #fed6e3)" data-color="pastel"></div>
-                        </div>
-                    </div>
-
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="removeBackground" checked>
-                        <label for="removeBackground">إزالة الخلفية تلقائياً</label>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="textSize">حجم النص</label>
-                        <input type="range" id="textSize" class="range-input" min="20" max="60" value="32">
-                    </div>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="action-buttons">
-                    <button class="btn btn-primary" onclick="generateImage()">
-                        ✨ إنشاء الصورة
-                    </button>
-                    <button class="btn btn-secondary" onclick="downloadImage()">
-                        📥 تحميل PNG
-                    </button>
-                    <button class="btn btn-secondary" onclick="downloadImageJPG()">
-                        📥 تحميل JPG
-                    </button>
-                    <button class="btn btn-danger" onclick="resetAll()">
-                        🔄 إعادة تعيين
-                    </button>
-                </div>
-            </div>
-
-            <div class="preview-panel">
-                <div class="section">
-                    <h3>👁️ معاينة الصورة</h3>
-                    <div class="loading" id="loading">
-                        <div class="spinner"></div>
-                        <p>جاري إنشاء الصورة...</p>
-                    </div>
-                    <div class="canvas-container">
-                        <canvas id="previewCanvas" width="600" height="600"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Developer Link -->
-    <a href="https://ahmedmehleb1.github.io/1/" target="_blank" class="developer-link">
-        👨‍💻 حول المطور
-    </a>
-
-    <script>
-        // Global variables
-        let uploadedImage = null;
-        let currentTemplate = 'modern';
-        let currentColorScheme = 'blue';
-        const canvas = document.getElementById('previewCanvas');
-        const ctx = canvas.getContext('2d');
-
-        // Color schemes
-        const colorSchemes = {
-            blue: {
-                primary: '#667eea',
-                secondary: '#764ba2',
-                accent: '#5a67d8',
-                text: '#1a202c',
-                light: '#edf2f7'
-            },
-            pink: {
-                primary: '#f093fb',
-                secondary: '#f5576c',
-                accent: '#e53e3e',
-                text: '#1a202c',
-                light: '#fed7e2'
-            },
-            cyan: {
-                primary: '#4facfe',
-                secondary: '#00f2fe',
-                accent: '#0891b2',
-                text: '#1a202c',
-                light: '#cffafe'
-            },
-            green: {
-                primary: '#43e97b',
-                secondary: '#38f9d7',
-                accent: '#059669',
-                text: '#1a202c',
-                light: '#d1fae5'
-            },
-            orange: {
-                primary: '#fa709a',
-                secondary: '#fee140',
-                accent: '#f59e0b',
-                text: '#1a202c',
-                light: '#fef3c7'
-            },
-            pastel: {
-                primary: '#a8edea',
-                secondary: '#fed6e3',
-                accent: '#8b5cf6',
-                text: '#1a202c',
-                light: '#f3f4f6'
-            }
-        };
-
-        // Initialize the application
-        function init() {
-            setupEventListeners();
-            drawPlaceholder();
-            updatePriceDisplay();
-        }
-
-        // Setup event listeners
-        function setupEventListeners() {
-            const uploadArea = document.getElementById('uploadArea');
-            const imageInput = document.getElementById('imageInput');
-
-            // File upload events
-            uploadArea.addEventListener('click', () => imageInput.click());
-            uploadArea.addEventListener('dragover', handleDragOver);
-            uploadArea.addEventListener('dragleave', handleDragLeave);
-            uploadArea.addEventListener('drop', handleDrop);
-            imageInput.addEventListener('change', handleFileSelect);
-
-            // Form inputs
-            document.getElementById('productName').addEventListener('input', updatePreview);
-            document.getElementById('productDescription').addEventListener('input', updatePreview);
-            document.getElementById('originalPrice').addEventListener('input', () => {
-                updatePriceDisplay();
-                updatePreview();
-            });
-            document.getElementById('discountPrice').addEventListener('input', () => {
-                updatePriceDisplay();
-                updatePreview();
-            });
-            document.getElementById('textSize').addEventListener('input', updatePreview);
-
-            // Template selection
-            document.querySelectorAll('.template-option').forEach(option => {
-                option.addEventListener('click', (e) => {
-                    document.querySelectorAll('.template-option').forEach(opt => opt.classList.remove('active'));
-                    e.target.classList.add('active');
-                    currentTemplate = e.target.dataset.template;
-                    updatePreview();
-                });
-            });
-
-            // Color scheme selection
-            document.querySelectorAll('.color-option').forEach(option => {
-                option.addEventListener('click', (e) => {
-                    document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));
-                    e.target.classList.add('active');
-                    currentColorScheme = e.target.dataset.color;
-                    updatePreview();
-                });
-            });
-        }
-
-        // Drag and drop handlers
-        function handleDragOver(e) {
-            e.preventDefault();
-            e.currentTarget.classList.add('dragover');
-        }
-
-        function handleDragLeave(e) {
-            e.currentTarget.classList.remove('dragover');
-        }
-
-        function handleDrop(e) {
-            e.preventDefault();
-            e.currentTarget.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                processImageFile(files[0]);
-            }
-        }
-
-        function handleFileSelect(e) {
-            const files = e.target.files;
-            if (files.length > 0) {
-                processImageFile(files[0]);
-            }
-        }
-
-        // Process uploaded image
-        function processImageFile(file) {
-            if (!file.type.startsWith('image/')) {
-                alert('يرجى اختيار ملف صورة صحيح');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    uploadedImage = img;
-                    updatePreview();
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        // Draw placeholder
-        function drawPlaceholder() {
-            ctx.fillStyle = '#f3f4f6';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.fillStyle = '#9ca3af';
-            ctx.font = '24px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('قم برفع صورة المنتج للبدء', canvas.width / 2, canvas.height / 2);
-        }
-
-        // Update price display
-        function updatePriceDisplay() {
-            const originalPrice = parseFloat(document.getElementById('originalPrice').value) || 0;
-            const discountPrice = parseFloat(document.getElementById('discountPrice').value) || 0;
-            const priceDisplay = document.getElementById('priceDisplay');
-
-            if (originalPrice > 0 && discountPrice > 0 && discountPrice < originalPrice) {
-                const discountPercent = Math.round(((originalPrice - discountPrice) / originalPrice) * 100);
-                priceDisplay.innerHTML = `
-                    <span class="original-price">$${originalPrice.toFixed(2)}</span>
-                    <span class="final-price">$${discountPrice.toFixed(2)}</span>
-                    <span class="discount-badge">خصم ${discountPercent}%</span>
-                `;
-            } else if (originalPrice > 0) {
-                priceDisplay.innerHTML = `<span class="final-price">$${originalPrice.toFixed(2)}</span>`;
-            } else {
-                priceDisplay.innerHTML = '';
-            }
-        }
-
-        // Remove background (simplified version)
-        function removeBackground(imageData) {
-            const data = imageData.data;
-            for (let i = 0; i < data.length; i += 4) {
-                const r = data[i];
-                const g = data[i + 1];
-                const b = data[i + 2];
-                
-                // Simple white background removal
-                if (r > 240 && g > 240 && b > 240) {
-                    data[i + 3] = 0; // Make transparent
-                }
-            }
-            return imageData;
-        }
-
-        // Generate the product image
-        function generateImage() {
-            if (!uploadedImage) {
-                alert('يرجى رفع صورة المنتج أولاً');
-                return;
-            }
-
-            document.getElementById('loading').style.display = 'block';
-            
-            setTimeout(() => {
-                updatePreview();
-                document.getElementById('loading').style.display = 'none';
-            }, 1000);
-        }
-
-        // Update preview
-        function updatePreview() {
-            if (!uploadedImage) {
-                drawPlaceholder();
-                return;
-            }
-
-            const scheme = colorSchemes[currentColorScheme];
-            const textSize = parseInt(document.getElementById('textSize').value);
-            const productName = document.getElementById('productName').value || 'اسم المنتج';
-            const productDescription = document.getElementById('productDescription').value || 'وصف المنتج';
-            const originalPrice = parseFloat(document.getElementById('originalPrice').value) || 0;
-            const discountPrice = parseFloat(document.getElementById('discountPrice').value) || 0;
-            const removeBackground = document.getElementById('removeBackground').checked;
-
-            // Clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw background based on template
-            drawBackground(scheme);
-
-            // Process and draw product image
-            drawProductImage(removeBackground);
-
-            // Draw text overlays based on template
-            drawTextOverlays(scheme, textSize, productName, productDescription, originalPrice, discountPrice);
-        }
-
-        // Draw background
-        function drawBackground(scheme) {
-            switch (currentTemplate) {
-                case 'modern':
-                    drawModernBackground(scheme);
-                    break;
-                case 'elegant':
-                    drawElegantBackground(scheme);
-                    break;
-                case 'minimal':
-                    drawMinimalBackground(scheme);
-                    break;
-                case 'bold':
-                    drawBoldBackground(scheme);
-                    break;
-            }
-        }
-
-        function drawModernBackground(scheme) {
-            // Gradient background
-            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-            gradient.addColorStop(0, scheme.light);
-            gradient.addColorStop(1, '#ffffff');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Decorative elements
-            ctx.fillStyle = scheme.primary + '20';
-            ctx.beginPath();
-            ctx.arc(canvas.width - 100, 100, 80, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = scheme.secondary + '15';
-            ctx.beginPath();
-            ctx.arc(100, canvas.height - 100, 60, 0, Math.PI * 2);
-            ctx.fill();
-        }
-
-        function drawElegantBackground(scheme) {
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Border
-            ctx.strokeStyle = scheme.primary;
-            ctx.lineWidth = 3;
-            ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
-        }
-
-        function drawMinimalBackground(scheme) {
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-
-        function drawBoldBackground(scheme) {
-            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-            gradient.addColorStop(0, scheme.primary);
-            gradient.addColorStop(1, scheme.secondary);
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-
-        // Draw product image
-        function drawProductImage(removeBackground) {
-            const maxWidth = 300;
-            const maxHeight = 300;
-            const imgRatio = uploadedImage.width / uploadedImage.height;
-            
-            let drawWidth = maxWidth;
-            let drawHeight = maxHeight;
-            
-            if (imgRatio > 1) {
-                drawHeight = maxWidth / imgRatio;
-            } else {
-                drawWidth = maxHeight * imgRatio;
-            }
-
-            const x = (canvas.width - drawWidth) / 2;
-            const y = 80;
-
-            if (removeBackground) {
-                // Simple background removal by drawing with composite operation
-                ctx.save();
-                ctx.globalCompositeOperation = 'multiply';
-            }
-
-            ctx.drawImage(uploadedImage, x, y, drawWidth, drawHeight);
-            
-            if (removeBackground) {
-                ctx.restore();
-            }
-
-            // Add shadow
-            ctx.save();
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
-            ctx.shadowBlur = 20;
-            ctx.shadowOffsetY = 10;
-            ctx.strokeStyle = 'transparent';
-            ctx.strokeRect(x, y, drawWidth, drawHeight);
-            ctx.restore();
-        }
-
-        // Draw text overlays
-        function drawTextOverlays(scheme, textSize, productName, productDescription, originalPrice, discountPrice) {
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-
-            // Product name
-            ctx.fillStyle = currentTemplate === 'bold' ? '#ffffff' : scheme.text;
-            ctx.font = `bold ${textSize}px Arial`;
-            ctx.fillText(productName, canvas.width / 2, 450);
-
-            // Product description
-            ctx.fillStyle = currentTemplate === 'bold' ? '#ffffff' : '#666666';
-            ctx.font = `${textSize - 8}px Arial`;
-            wrapText(ctx, productDescription, canvas.width / 2, 490, canvas.width - 100, textSize - 4);
-
-            // Price display
-            if (originalPrice > 0) {
-                const priceY = 540;
-                
-                if (discountPrice > 0 && discountPrice < originalPrice) {
-                    // Original price (strikethrough)
-                    ctx.fillStyle = '#999999';
-                    ctx.font = `${textSize - 6}px Arial`;
-                    const originalText = `$${originalPrice.toFixed(2)}`;
-                    ctx.fillText(originalText, canvas.width / 2 - 60, priceY);
-                    
-                    // Strikethrough line
-                    const textWidth = ctx.measureText(originalText).width;
-                    ctx.strokeStyle = '#999999';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.moveTo(canvas.width / 2 - 60 - textWidth / 2, priceY);
-                    ctx.lineTo(canvas.width / 2 - 60 + textWidth / 2, priceY);
-                    ctx.stroke();
-
-                    // Discounted price
-                    ctx.fillStyle = scheme.accent;
-                    ctx.font = `bold ${textSize}px Arial`;
-                    ctx.fillText(`$${discountPrice.toFixed(2)}`, canvas.width / 2 + 60, priceY);
-
-                    // Discount badge
-                    const discountPercent = Math.round(((originalPrice - discountPrice) / originalPrice) * 100);
-                    drawDiscountBadge(canvas.width / 2 + 120, priceY - 20, `${discountPercent}%`);
-                } else {
-                    ctx.fillStyle = scheme.accent;
-                    ctx.font = `bold ${textSize}px Arial`;
-                    ctx.fillText(`$${originalPrice.toFixed(2)}`, canvas.width / 2, priceY);
-                }
-            }
-        }
-
-        // Draw discount badge
-        function drawDiscountBadge(x, y, text) {
-            ctx.save();
-            ctx.fillStyle = '#ef4444';
-            ctx.beginPath();
-            ctx.roundRect(x - 25, y - 15, 50, 30, 15);
-            ctx.fill();
-
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 14px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText(text, x, y + 5);
-            ctx.restore();
-        }
-
-        // Wrap text function
-        function wrapText(context, text, x, y, maxWidth, lineHeight) {
-            const words = text.split(' ');
-            let line = '';
-            let currentY = y;
-
-            for (let n = 0; n < words.length; n++) {
-                const testLine = line + words[n] + ' ';
-                const metrics = context.measureText(testLine);
-                const testWidth = metrics.width;
-                
-                if (testWidth > maxWidth && n > 0) {
-                    context.fillText(line, x, currentY);
-                    line = words[n] + ' ';
-                    currentY += lineHeight;
-                } else {
-                    line = testLine;
-                }
-            }
-            context.fillText(line, x, currentY);
-        }
-
-        // Add roundRect to canvas context if not available
-        if (!CanvasRenderingContext2D.prototype.roundRect) {
-            CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
-                this.beginPath();
-                this.moveTo(x + radius, y);
-                this.lineTo(x + width - radius, y);
-                this.quadraticCurveTo(x + width, y, x + width, y + radius);
-                this.lineTo(x + width, y + height - radius);
-                this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-                this.lineTo(x + radius, y + height);
-                this.quadraticCurveTo(x, y + height, x, y + height - radius);
-                this.lineTo(x, y + radius);
-                this.quadraticCurveTo(x, y, x + radius, y);
-                this.closePath();
-            };
-        }
-
-        // Download functions
-        function downloadImage() {
-            const link = document.createElement('a');
-            link.download = 'product-image.png';
-            link.href = canvas.toDataURL();
-            link.click();
-        }
-
-        function downloadImageJPG() {
-            const link = document.createElement('a');
-            link.download = 'product-image.jpg';
-            link.href = canvas.toDataURL('image/jpeg', 0.9);
-            link.click();
-        }
-
-        // Reset all
-        function resetAll() {
-            uploadedImage = null;
-            document.getElementById('imageInput').value = '';
-            document.getElementById('productName').value = '';
-            document.getElementById('productDescription').value = '';
-            document.getElementById('originalPrice').value = '';
-            document.getElementById('discountPrice').value = '';
-            document.getElementById('textSize').value = 32;
-            
-            // Reset template and color scheme
-            document.querySelectorAll('.template-option').forEach(opt => opt.classList.remove('active'));
-            document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));
-            document.querySelector('.template-option[data-template="modern"]').classList.add('active');
-            document.querySelector('.color-option[data-color="blue"]').classList.add('active');
-            
-            currentTemplate = 'modern';
-            currentColorScheme = 'blue';
-            
-            updatePriceDisplay();
-            drawPlaceholder();
-        }
-
-        // Initialize the application when the page loads
-        window.addEventListener('load', init);
-    </script>
-</body>
-</html>
+          <html lang="ar" dir="rtl">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>BatalStore</title>
+              <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+              <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+              <style>
+                  :root {
+                      --primary-blue: #1a4f72;
+                      --secondary-blue: #2d5a87;
+                      --accent-gold: #f4b942;
+                      --dark-bg: #0a0e1a;
+                      --card-bg: #1e2332;
+                      --text-light: #ffffff;
+                      --text-gray: #b0b8c8;
+                      --gradient-primary: linear-gradient(135deg, #1a4f72, #2d5a87);
+                      --gradient-gold: linear-gradient(135deg, #f4b942, #ffd700);
+                      --shadow-glow: 0 0 30px rgba(244, 185, 66, 0.3);
+                  }
+
+                  * {
+                      margin: 0;
+                      padding: 0;
+                      box-sizing: border-box;
+                  }
+
+                  body {
+                      font-family: 'Roboto', 'Cairo', 'Amiri', sans-serif;
+                      background: var(--dark-bg);
+                      color: var(--text-light);
+                      overflow-x: hidden;
+                      line-height: 1.6;
+                      direction: rtl;
+                  }
+
+                  * {
+                      text-align: right;
+                  }
+
+                  .center-text {
+                      text-align: center !important;
+                  }
+
+                  /* Animated Background */
+                  .bg-animation {
+                      position: fixed;
+                      top: 0;
+                      left: 0;
+                      width: 100%;
+                      height: 100%;
+                      z-index: -1;
+                      background: radial-gradient(circle at 20% 50%, rgba(26, 79, 114, 0.3) 0%, transparent 50%),
+                                  radial-gradient(circle at 80% 20%, rgba(244, 185, 66, 0.2) 0%, transparent 50%),
+                                  radial-gradient(circle at 40% 80%, rgba(45, 90, 135, 0.3) 0%, transparent 50%);
+                      animation: backgroundShift 20s ease-in-out infinite;
+                  }
+
+                  @keyframes backgroundShift {
+                      0%, 100% { transform: translateX(0) translateY(0); }
+                      33% { transform: translateX(-20px) translateY(20px); }
+                      66% { transform: translateX(20px) translateY(-20px); }
+                  }
+
+                  /* Header */
+                  .header {
+                      position: relative;
+                      padding: 2rem 0;
+                      text-align: center;
+                      background: var(--gradient-primary);
+                      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+                  }
+
+                  .header * {
+                      text-align: center !important;
+                  }
+
+                  .logo {
+                      width: 120px;
+                      height: 120px;
+                      margin: 0 auto 1rem;
+                      position: relative;
+                      transform-style: preserve-3d;
+                      animation: logoFloat 3s ease-in-out infinite;
+                  }
+
+                  @keyframes logoFloat {
+                      0%, 100% { transform: translateY(0) rotateY(0deg); }
+                      50% { transform: translateY(-10px) rotateY(5deg); }
+                  }
+
+                  .logo-icon {
+                      width: 100%;
+                      height: 100%;
+                      background: var(--gradient-gold);
+                      border-radius: 20px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      box-shadow: var(--shadow-glow);
+                      transform: perspective(1000px) rotateX(10deg);
+                      overflow: hidden;
+                  }
+
+                  .logo-icon img {
+                      width: 100%;
+                      height: 100%;
+                      object-fit: cover;
+                      border-radius: 20px;
+                      animation: iconPulse 2s ease-in-out infinite;
+                  }
+
+                  @keyframes iconPulse {
+                      0%, 100% { transform: scale(1); }
+                      50% { transform: scale(1.1); }
+                  }
+
+                  .site-title {
+                      font-family: 'Orbitron', monospace;
+                      font-size: 2.5rem;
+                      font-weight: 900;
+                      margin-bottom: 0.5rem;
+                      text-shadow: 0 0 20px rgba(244, 185, 66, 0.5);
+                      background: var(--gradient-gold);
+                      -webkit-background-clip: text;
+                      -webkit-text-fill-color: transparent;
+                      background-clip: text;
+                      text-align: center;
+                  }
+
+                  .site-subtitle {
+                      font-size: 1.2rem;
+                      color: var(--text-gray);
+                      margin-bottom: 0.5rem;
+                  }
+
+                  .sponsor-text {
+                      font-size: 0.9rem;
+                      color: var(--accent-gold);
+                      font-weight: 500;
+                  }
+
+                  /* Main Container */
+                  .container {
+                      max-width: 1200px;
+                      margin: 0 auto;
+                      padding: 0 1rem;
+                  }
+
+                  /* Services Section */
+                  .services {
+                      padding: 4rem 0;
+                  }
+
+                  .section-title {
+                      text-align: center !important;
+                      font-family: 'Orbitron', monospace;
+                      font-size: 2rem;
+                      margin-bottom: 3rem;
+                      color: var(--accent-gold);
+                      text-shadow: 0 0 10px rgba(244, 185, 66, 0.5);
+                  }
+
+                  .games-grid {
+                      display: grid;
+                      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                      gap: 2rem;
+                      padding: 2rem 0;
+                  }
+
+                  /* PUBG Game Card */
+                  .game-card {
+                      background: var(--card-bg);
+                      border-radius: 20px;
+                      padding: 2rem;
+                      position: relative;
+                      cursor: pointer;
+                      transform-style: preserve-3d;
+                      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                      overflow: hidden;
+                      border: 2px solid transparent;
+                      background-clip: padding-box;
+                  }
+
+                  .game-card::before {
+                      content: '';
+                      position: absolute;
+                      top: 0;
+                      left: 0;
+                      right: 0;
+                      bottom: 0;
+                      background: var(--gradient-gold);
+                      border-radius: 20px;
+                      padding: 2px;
+                      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+                      mask-composite: exclude;
+                      opacity: 0;
+                      transition: opacity 0.3s ease;
+                  }
+
+                  .game-card:hover {
+                      transform: perspective(1000px) rotateX(-5deg) rotateY(5deg) translateY(-20px);
+                      box-shadow: 0 20px 40px rgba(244, 185, 66, 0.3);
+                  }
+
+                  .game-card:hover::before {
+                      opacity: 1;
+                  }
+
+                  .game-icon {
+                      width: 80px;
+                      height: 80px;
+                      margin: 0 auto 1.5rem;
+                      background: var(--gradient-primary);
+                      border-radius: 15px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+                      position: relative;
+                      overflow: hidden;
+                  }
+
+                  .game-icon::after {
+                      content: '';
+                      position: absolute;
+                      top: 0;
+                      left: -100%;
+                      width: 100%;
+                      height: 100%;
+                      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+                      animation: shine 3s ease-in-out infinite;
+                  }
+
+                  @keyframes shine {
+                      0% { left: -100%; }
+                      100% { left: 100%; }
+                  }
+
+                  .game-icon i {
+                      font-size: 2.5rem;
+                      color: var(--accent-gold);
+                  }
+
+                  .game-icon img {
+                      width: 100%;
+                      height: 100%;
+                      object-fit: cover;
+                      border-radius: 15px;
+                  }
+
+                  .game-title {
+                      font-family: 'Orbitron', monospace;
+                      font-size: 1.5rem;
+                      font-weight: 700;
+                      text-align: center !important;
+                      margin-bottom: 1rem;
+                      color: var(--text-light);
+                  }
+
+                  .game-description {
+                      text-align: center !important;
+                      color: var(--text-gray);
+                      margin-bottom: 1.5rem;
+                      line-height: 1.6;
+                  }
+
+                  .play-button {
+                      background: var(--gradient-gold);
+                      border: none;
+                      border-radius: 25px;
+                      padding: 12px 30px;
+                      color: var(--primary-blue);
+                      font-weight: 700;
+                      cursor: pointer;
+                      display: block;
+                      margin: 0 auto;
+                      font-size: 1rem;
+                      transition: all 0.3s ease;
+                      position: relative;
+                      overflow: hidden;
+                  }
+
+                  .play-button::before {
+                      content: '';
+                      position: absolute;
+                      top: 50%;
+                      left: 50%;
+                      width: 0;
+                      height: 0;
+                      background: rgba(255, 255, 255, 0.3);
+                      border-radius: 50%;
+                      transition: all 0.3s ease;
+                      transform: translate(-50%, -50%);
+                  }
+
+                  .play-button:hover::before {
+                      width: 300px;
+                      height: 300px;
+                  }
+
+                  .play-button:hover {
+                      transform: translateY(-2px);
+                      box-shadow: 0 10px 20px rgba(244, 185, 66, 0.4);
+                  }
+
+                  /* Modal */
+                  .modal {
+                      display: none;
+                      position: fixed;
+                      z-index: 1000;
+                      left: 0;
+                      top: 0;
+                      width: 100%;
+                      height: 100%;
+                      background-color: rgba(0, 0, 0, 0.8);
+                      backdrop-filter: blur(10px);
+                  }
+
+                  .modal-content {
+                      background: var(--card-bg);
+                      margin: 5% auto;
+                      padding: 2rem;
+                      border-radius: 20px;
+                      width: 90%;
+                      max-width: 500px;
+                      max-height: 80vh;
+                      position: relative;
+                      animation: modalSlideIn 0.3s ease-out;
+                      border: 2px solid var(--accent-gold);
+                      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+                      overflow-y: auto;
+                      scrollbar-width: thin;
+                      scrollbar-color: var(--accent-gold) var(--card-bg);
+                  }
+
+                  .modal-content::-webkit-scrollbar {
+                      width: 8px;
+                  }
+
+                  .modal-content::-webkit-scrollbar-track {
+                      background: var(--card-bg);
+                      border-radius: 10px;
+                  }
+
+                  .modal-content::-webkit-scrollbar-thumb {
+                      background: var(--accent-gold);
+                      border-radius: 10px;
+                  }
+
+                  .modal-content::-webkit-scrollbar-thumb:hover {
+                      background: var(--gradient-gold);
+                  }
+
+                  @keyframes modalSlideIn {
+                      from { transform: translateY(-50px); opacity: 0; }
+                      to { transform: translateY(0); opacity: 1; }
+                  }
+
+                  .close {
+                      color: var(--text-gray);
+                      float: right;
+                      font-size: 28px;
+                      font-weight: bold;
+                      cursor: pointer;
+                      transition: color 0.3s ease;
+                  }
+
+                  .close:hover {
+                      color: var(--accent-gold);
+                  }
+
+                  .modal-title {
+                      font-family: 'Orbitron', monospace;
+                      color: var(--accent-gold);
+                      margin-bottom: 1.5rem;
+                      text-align: center !important;
+                      font-size: 1.5rem;
+                  }
+
+                  .uc-options {
+                      display: grid;
+                      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                      gap: 1rem;
+                      margin: 2rem 0;
+                  }
+
+                  .uc-option {
+                      background: var(--gradient-primary);
+                      border: 2px solid transparent;
+                      border-radius: 15px;
+                      padding: 1rem;
+                      text-align: center !important;
+                      cursor: pointer;
+                      transition: all 0.3s ease;
+                      color: var(--text-light);
+                  }
+
+                  .service-type-btn {
+                      background: var(--gradient-primary);
+                      border: 2px solid transparent;
+                      border-radius: 20px;
+                      padding: 10px 20px;
+                      color: var(--text-light);
+                      cursor: pointer;
+                      transition: all 0.3s ease;
+                      font-size: 0.9rem;
+                      font-weight: 600;
+                  }
+
+                  .service-type-btn:hover {
+                      border-color: var(--accent-gold);
+                      transform: translateY(-2px);
+                      box-shadow: 0 5px 15px rgba(244, 185, 66, 0.3);
+                  }
+
+                  .service-type-btn.active {
+                      background: var(--gradient-gold);
+                      color: var(--primary-blue);
+                      border-color: var(--accent-gold);
+                  }
+
+                  .offer-details {
+                      font-size: 0.8rem;
+                      color: var(--text-gray);
+                      margin-top: 0.5rem;
+                      line-height: 1.4;
+                  }
+
+                  .bonus-text {
+                      font-size: 0.75rem;
+                      color: var(--accent-gold);
+                      margin-top: 0.5rem;
+                      line-height: 1.3;
+                  }
+
+                  .prosperity-offer {
+                      position: relative;
+                  }
+
+                  .prosperity-offer::after {
+                      content: '';
+                      position: absolute;
+                      top: -2px;
+                      left: -2px;
+                      right: -2px;
+                      bottom: -2px;
+                      background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+                      border-radius: 17px;
+                      z-index: -1;
+                      opacity: 0.3;
+                      animation: rainbowGlow 3s ease-in-out infinite alternate;
+                  }
+
+                  @keyframes rainbowGlow {
+                      0% { opacity: 0.3; transform: scale(1); }
+                      100% { opacity: 0.6; transform: scale(1.02); }
+                  }
+
+                  .special-offer {
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                  }
+
+                  .special-max {
+                      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+                      position: relative;
+                      overflow: hidden;
+                  }
+
+                  .special-max::before {
+                      content: '⭐';
+                      position: absolute;
+                      top: 5px;
+                      right: 5px;
+                      font-size: 1.5rem;
+                      animation: starPulse 2s ease-in-out infinite;
+                  }
+
+                  @keyframes starPulse {
+                      0%, 100% { transform: scale(1) rotate(0deg); }
+                      50% { transform: scale(1.2) rotate(180deg); }
+                  }
+
+                  .uc-option:hover {
+                      border-color: var(--accent-gold);
+                      transform: translateY(-5px);
+                      box-shadow: 0 10px 20px rgba(244, 185, 66, 0.3);
+                  }
+
+                  .uc-option.selected {
+                      background: var(--gradient-gold);
+                      color: var(--primary-blue);
+                      border-color: var(--accent-gold);
+                  }
+
+                  .uc-amount {
+                      font-size: 1.2rem;
+                      font-weight: 700;
+                      margin-bottom: 0.5rem;
+                  }
+
+                  .uc-price {
+                      font-size: 0.9rem;
+                      opacity: 0.8;
+                  }
+
+                  .confirm-button {
+                      background: var(--gradient-gold);
+                      border: none;
+                      border-radius: 25px;
+                      padding: 15px 40px;
+                      color: var(--primary-blue);
+                      font-weight: 700;
+                      cursor: pointer;
+                      font-size: 1.1rem;
+                      width: 100%;
+                      margin-top: 1.5rem;
+                      transition: all 0.3s ease;
+                  }
+
+                  .confirm-button:hover {
+                      transform: translateY(-2px);
+                      box-shadow: 0 10px 20px rgba(244, 185, 66, 0.4);
+                  }
+
+                  .confirm-button:disabled {
+                      opacity: 0.5;
+                      cursor: not-allowed;
+                      transform: none;
+                  }
+
+                  /* Contact Section */
+                  .contact {
+                      background: var(--gradient-primary);
+                      padding: 3rem 0;
+                      margin-top: 4rem;
+                  }
+
+                  .contact-title {
+                      text-align: center !important;
+                      font-family: 'Orbitron', monospace;
+                      font-size: 1.8rem;
+                      margin-bottom: 2rem;
+                      color: var(--accent-gold);
+                  }
+
+                  .contact-buttons {
+                      display: flex;
+                      justify-content: center;
+                      gap: 2rem;
+                      flex-wrap: wrap;
+                  }
+
+                  .contact-button {
+                      display: inline-flex;
+                      align-items: center;
+                      gap: 10px;
+                      padding: 15px 30px;
+                      border-radius: 25px;
+                      text-decoration: none;
+                      font-weight: 700;
+                      transition: all 0.3s ease;
+                      transform: perspective(1000px) rotateX(0deg);
+                  }
+
+                  .whatsapp-btn {
+                      background: #25d366;
+                      color: white;
+                  }
+
+                  .whatsapp-btn:hover {
+                      background: #128c7e;
+                      transform: perspective(1000px) rotateX(-10deg) translateY(-5px);
+                      box-shadow: 0 15px 30px rgba(37, 211, 102, 0.4);
+                  }
+
+                  .facebook-btn {
+                      background: #1877f2;
+                      color: white;
+                  }
+
+                  .facebook-btn:hover {
+                      background: #166fe5;
+                      transform: perspective(1000px) rotateX(-10deg) translateY(-5px);
+                      box-shadow: 0 15px 30px rgba(24, 119, 242, 0.4);
+                  }
+
+                  .tiktok-btn {
+                      background: #000000;
+                      color: white;
+                  }
+
+                  .tiktok-btn:hover {
+                      background: #333333;
+                      transform: perspective(1000px) rotateX(-10deg) translateY(-5px);
+                      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+                  }
+
+                  /* Footer */
+                  .footer {
+                      text-align: center !important;
+                      padding: 2rem 0;
+                      color: var(--text-gray);
+                      border-top: 1px solid var(--secondary-blue);
+                  }
+
+                  /* Responsive Design */
+                  @media (max-width: 768px) {
+                      .site-title {
+                          font-size: 2rem;
+                      }
+
+                      .games-grid {
+                          grid-template-columns: 1fr;
+                          gap: 1.5rem;
+                      }
+
+                      .contact-buttons {
+                          flex-direction: column;
+                          align-items: center;
+                      }
+
+                      .modal-content {
+                          margin: 10% auto;
+                          width: 95%;
+                      }
+
+                      .uc-options {
+                          grid-template-columns: repeat(2, 1fr);
+                      }
+                  }
+
+                  @media (max-width: 480px) {
+                      .site-title {
+                          font-size: 1.8rem;
+                      }
+
+                      .section-title {
+                          font-size: 1.5rem;
+                      }
+
+                      .game-card {
+                          padding: 1.5rem;
+                      }
+                  }
+
+                  /* Particles Animation */
+                  .particles {
+                      position: fixed;
+                      top: 0;
+                      left: 0;
+                      width: 100%;
+                      height: 100%;
+                      pointer-events: none;
+                      z-index: -1;
+                  }
+
+                  .particle {
+                      position: absolute;
+                      width: 4px;
+                      height: 4px;
+                      background: var(--accent-gold);
+                      border-radius: 50%;
+                      animation: float 6s ease-in-out infinite;
+                      opacity: 0.6;
+                  }
+
+                  @keyframes float {
+                      0%, 100% {
+                          transform: translateY(0px) rotate(0deg);
+                          opacity: 0;
+                      }
+                      50% {
+                          opacity: 0.6;
+                      }
+                      100% {
+                          transform: translateY(-100vh) rotate(360deg);
+                          opacity: 0;
+                      }
+                  }
+              </style>
+          </head>
+          <body>
+              <!-- Animated Background -->
+              <div class="bg-animation"></div>
+
+              <!-- Particles -->
+              <div class="particles" id="particles"></div>
+
+              <!-- Header -->
+              <header class="header">
+                  <div class="container">
+                      <div class="logo">
+                          <div class="logo-icon">
+                              <img src="images/logo.png" alt="Batal Electronic Essentials Logo">
+                          </div>
+                      </div>
+                      <h1 class="site-title">Batal</h1>
+                      <p class="site-subtitle">شحن الألعاب الإلكترونية وشراء متابعين سوشيال ميديا</p>
+                      <p class="sponsor-text">خدمات السوشيال ميديا والإنترنت - Sponsored by Islam Batal</p>
+                  </div>
+              </header>
+
+              <!-- Main Content -->
+              <main>
+                  <!-- Services Section -->
+                  <section class="services">
+                      <div class="container">
+                          <h2 class="section-title">شحن الألعاب الإلكترونية وخدمات السوشيال ميديا</h2>
+                          <div class="games-grid">
+                              <!-- PUBG Mobile Card -->
+                              <div class="game-card" onclick="openPUBGModal()">
+                                  <div class="game-icon">
+                                      <img src="images/pupg.png" alt="PUBG Mobile">
+                                  </div>
+                                  <h3 class="game-title">PUBG Mobile</h3>
+                                  <p class="game-description">اشحن شدات PUBG Mobile واستمتع بالعناصر الحصرية والأسلحة وبطاقات القتال. تسليم سريع وآمن مضمون.</p>
+                                  <button class="play-button">
+                                      <i class="fas fa-shopping-cart"></i> اشحن الآن
+                                  </button>
+                              </div>
+
+                              <!-- eFootball Card -->
+                              <div class="game-card" onclick="openEFootballModal()">
+                                  <div class="game-icon">
+                                      <img src="images/efootball_kv.jpg" alt="eFootball">
+                                  </div>
+                                  <h3 class="game-title">eFootball</h3>
+                                  <p class="game-description">اشحن كوين eFootball (بيس) واحصل على أفضل اللاعبين والفرق. استمتع بتجربة كرة القدم الأكثر واقعية.</p>
+                                  <button class="play-button">
+                                      <i class="fas fa-shopping-cart"></i> اشحن الآن
+                                  </button>
+                              </div>
+
+                              <!-- PUBG Korea Card -->
+                              <div class="game-card" onclick="openPUBGKoreaModal()">
+                                  <div class="game-icon">
+                                      <img src="images/unnamed.webp" alt="PUBG Korea">
+                                  </div>
+                                  <h3 class="game-title">PUBG Korea 🔥</h3>
+                                  <p class="game-description">اشحن شدات PUBG الكورية واستمتع بالعروض الحصرية والعناصر المميزة. أسعار خاصة وتسليم فوري.</p>
+                                  <button class="play-button">
+                                      <i class="fas fa-shopping-cart"></i> اشحن الآن
+                                  </button>
+                              </div>
+
+                              <!-- Free Fire Card -->
+                              <div class="game-card" onclick="openFreeFireModal()">
+                                  <div class="game-icon">
+                                      <img src="images/2025_6_30_11_13_35_378.jpg" alt="Free Fire">
+                                  </div>
+                                  <h3 class="game-title">Free Fire 🔥💎</h3>
+                                  <p class="game-description">اشحن الماس Free Fire واحصل على الشخصيات والأسلحة الحصرية. أسعار تخليص فري وتسليم فوري مضمون.</p>
+                                  <button class="play-button">
+                                      <i class="fas fa-gem"></i> اشحن الآن
+                                  </button>
+                              </div>
+
+                              <!-- Social Media Card -->
+                              <div class="game-card" onclick="openSocialMediaModal()">
+                                  <div class="game-icon">
+                                      <img src="images/a50b1225ba178de1f5714cd197e4028c.jpg" alt="Social Media">
+                                  </div>
+                                  <h3 class="game-title">السوشيال ميديا 📱</h3>
+                                  <p class="game-description">خدمات شحن متابعين وإعجابات ومشاهدات لفيسبوك وإنستجرام. متابعين حقيقيين وحسابات عربية نشطة مضمونة.</p>
+                                  <button class="play-button">
+                                      <i class="fas fa-users"></i> اطلب الآن
+                                  </button>
+                              </div>
+                          </div>
+                      </div>
+                  </section>
+
+                  <!-- Contact Section -->
+                  <section class="contact">
+                      <div class="container">
+                          <h2 class="contact-title">التواصل والدعم</h2>
+                          <div class="contact-buttons">
+                              <a href="https://wa.me/201122877573" class="contact-button whatsapp-btn" target="_blank">
+                                  <i class="fab fa-whatsapp"></i>
+                                  دعم واتساب
+                              </a>
+                              <a href="https://www.facebook.com/share/1GYsPzLviZ/" class="contact-button facebook-btn" target="_blank">
+                                  <i class="fab fa-facebook"></i>
+                                  صفحة فيسبوك
+                              </a>
+                              <a href="#" class="contact-button tiktok-btn" target="_blank">
+                                  <i class="fab fa-tiktok"></i>
+                                  تيك توك
+                              </a>
+                          </div>
+                      </div>
+                  </section>
+              </main>
+
+              <!-- Footer -->
+              <footer class="footer">
+                  <div class="container">
+                      <p>&copy; 2025 Batal Electronic Essentials. جميع الحقوق محفوظة. | شحن الألعاب الإلكترونية وخدمات السوشيال ميديا والإنترنت</p>
+                  </div>
+              </footer>
+
+              <!-- PUBG Modal -->
+              <div id="pubgModal" class="modal">
+                  <div class="modal-content">
+                      <span class="close" onclick="closePUBGModal()">&times;</span>
+                      <h2 class="modal-title">
+                          <i class="fas fa-crosshairs"></i> شحن شدات PUBG Mobile
+                      </h2>
+                      <p style="text-align: center; color: var(--text-gray); margin-bottom: 1.5rem;" class="center-text">
+                          اختر نوع الخدمة والعرض المناسب لك:
+                      </p>
+
+                      <!-- Service Type Selection -->
+                      <div style="margin: 1.5rem 0;">
+                          <h3 style="color: var(--accent-gold); margin-bottom: 1rem; text-align: center !important;">نوع الخدمة:</h3>
+                          <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                              <button class="service-type-btn active" data-service="id">شحن بالآيدي 🔥</button>
+                              <button class="service-type-btn" data-service="account">شحن بالأكونت ⚡</button>
+                              <button class="service-type-btn" data-service="prime">برايم بلاس 💫</button>
+                              <button class="service-type-btn" data-service="prosperity">عروض الإزدهار 🩸</button>
+                          </div>
+                      </div>
+
+                      <!-- UC Options for ID Service -->
+                      <div class="uc-options" id="ucOptionsId">
+                          <div class="uc-option" data-uc="60" data-price="55 ج" data-emoji="💫">
+                              <div class="uc-amount">60 UC</div>
+                              <div class="uc-price">55 ج 💫</div>
+                          </div>
+                          <div class="uc-option" data-uc="120" data-price="110 ج" data-emoji="🔥">
+                              <div class="uc-amount">120 UC</div>
+                              <div class="uc-price">110 ج 🔥</div>
+                          </div>
+                          <div class="uc-option" data-uc="325" data-price="260 ج" data-emoji="⚡">
+                              <div class="uc-amount">325 UC</div>
+                              <div class="uc-price">260 ج ⚡</div>
+                          </div>
+                          <div class="uc-option" data-uc="660" data-price="480 ج" data-emoji="🌊">
+                              <div class="uc-amount">660 UC</div>
+                              <div class="uc-price">480 ج 🌊</div>
+                          </div>
+                          <div class="uc-option" data-uc="985" data-price="730 ج" data-emoji="💥">
+                              <div class="uc-amount">985 UC</div>
+                              <div class="uc-price">730 ج 💥</div>
+                          </div>
+                          <div class="uc-option" data-uc="1320" data-price="950 ج" data-emoji="✨">
+                              <div class="uc-amount">1320 UC</div>
+                              <div class="uc-price">950 ج ✨</div>
+                          </div>
+                          <div class="uc-option" data-uc="1800" data-price="1200 ج" data-emoji="🔥">
+                              <div class="uc-amount">1800 UC</div>
+                              <div class="uc-price">1200 ج 🔥</div>
+                          </div>
+                          <div class="uc-option" data-uc="3850" data-price="2375 ج" data-emoji="⚡">
+                              <div class="uc-amount">3850 UC</div>
+                              <div class="uc-price">2375 ج ⚡</div>
+                          </div>
+                          <div class="uc-option" data-uc="8100" data-price="4475 ج" data-emoji="🌊">
+                              <div class="uc-amount">8100 UC</div>
+                              <div class="uc-price">4475 ج 🌊</div>
+                          </div>
+                      </div>
+
+                      <!-- UC Options for Account Service -->
+                      <div class="uc-options" id="ucOptionsAccount" style="display: none;">
+                          <div class="uc-option" data-uc="325" data-price="245 ج" data-emoji="⚡">
+                              <div class="uc-amount">325 UC</div>
+                              <div class="uc-price">245 ج ⚡</div>
+                          </div>
+                          <div class="uc-option" data-uc="660" data-price="450 ج" data-emoji="🌊">
+                              <div class="uc-amount">660 UC</div>
+                              <div class="uc-price">450 ج 🌊</div>
+                          </div>
+                          <div class="uc-option" data-uc="985" data-price="680 ج" data-emoji="💥">
+                              <div class="uc-amount">985 UC</div>
+                              <div class="uc-price">680 ج 💥</div>
+                          </div>
+                          <div class="uc-option" data-uc="1320" data-price="885 ج" data-emoji="✨">
+                              <div class="uc-amount">1320 UC</div>
+                              <div class="uc-price">885 ج ✨</div>
+                          </div>
+                          <div class="uc-option" data-uc="1800" data-price="1125 ج" data-emoji="🔥">
+                              <div class="uc-amount">1800 UC</div>
+                              <div class="uc-price">1125 ج 🔥</div>
+                          </div>
+                          <div class="uc-option" data-uc="3850" data-price="2125 ج" data-emoji="⚡">
+                              <div class="uc-amount">3850 UC</div>
+                              <div class="uc-price">2125 ج ⚡</div>
+                          </div>
+                          <div class="uc-option" data-uc="8100" data-price="4050 ج" data-emoji="🌊">
+                              <div class="uc-amount">8100 UC</div>
+                              <div class="uc-price">4050 ج 🌊</div>
+                          </div>
+                      </div>
+
+                      <!-- Prime Plus Option -->
+                      <div class="uc-options" id="ucOptionsPrime" style="display: none;">
+                          <div class="uc-option special-offer" data-uc="برايم بلاس" data-price="480 ج" data-emoji="⚠️">
+                              <div class="uc-amount">برايم بلاس ⚠️</div>
+                              <div class="uc-price">480 ج</div>
+                              <div class="offer-details">660 شدة + 8 شدات يومياً لمدة شهر + نقاط RP + قسائم خصم + صناديق 🔥</div>
+                          </div>
+                      </div>
+
+                      <!-- Prosperity Offers -->
+                      <div class="uc-options" id="ucOptionsProsperity" style="display: none;">
+
+                          <div class="uc-option prosperity-offer" data-uc="60" data-price="65 ج" data-emoji="💥" data-bonus="60 شدة هدية">
+                              <div class="uc-amount">60 UC</div>
+                              <div class="uc-price">65 ج</div>
+                              <div class="bonus-text">+ 60 شدة هدية 💥</div>
+                          </div>
+                          <div class="uc-option prosperity-offer" data-uc="325" data-price="165 ج" data-emoji="💫" data-bonus="60 شدة هدية + أجزاء ماتريال">
+                              <div class="uc-amount">325 UC</div>
+                              <div class="uc-price">165 ج</div>
+                              <div class="bonus-text">+ 60 شدة هدية + أجزاء ماتريال 💫</div>
+                          </div>
+                          <div class="uc-option prosperity-offer" data-uc="660" data-price="260 ج" data-emoji="🔥" data-bonus="280 شدة هدية + أجزاء ماتريال">
+                              <div class="uc-amount">660 UC</div>
+                              <div class="uc-price">260 ج</div>
+                              <div class="bonus-text">+ 280 شدة هدية + أجزاء ماتريال 🔥</div>
+                          </div>
+                          <div class="uc-option prosperity-offer" data-uc="1800" data-price="سعر خاص" data-emoji="🌊⚠️" data-bonus="280 شدة + أجزاء ماتريال + 2 كريستالة حمراء">
+                              <div class="uc-amount">1800 UC</div>
+                              <div class="uc-price">سعر خاص</div>
+                              <div class="bonus-text">+ 280 شدة + أجزاء ماتريال + 2 كريستالة حمراء 🌊⚠️</div>
+                          </div>
+                          <div class="uc-option prosperity-offer" data-uc="3850" data-price="سعر خاص" data-emoji="✨🔥" data-bonus="880 شدة + أجزاء ماتريال + 2 كريستالة ميثيك">
+                              <div class="uc-amount">3850 UC</div>
+                              <div class="uc-price">سعر خاص</div>
+                              <div class="bonus-text">+ 880 شدة + أجزاء ماتريال + 2 كريستالة ميثيك ✨🔥</div>
+                          </div>
+                          <div class="uc-option prosperity-offer" data-uc="8100" data-price="سعر خاص" data-emoji="💥🔥" data-bonus="880 شدة + أجزاء ماتريال + 2 كريستالة ميثيك + 2 ماتريال">
+                              <div class="uc-amount">8100 UC</div>
+                              <div class="uc-price">سعر خاص</div>
+                              <div class="bonus-text">+ 880 شدة + أجزاء ماتريال + 2 كريستالة ميثيك + 2 ماتريال 💥🔥</div>
+                          </div>
+                          <div class="uc-option prosperity-offer special-max" data-uc="16200" data-price="سعر خاص" data-emoji="🔥🔥🔥🔥" data-bonus="أجزاء ماتريال + 2 كريستالة ميثيك + 2 ماتريال + حوالي 3000 شدة أو أكثر">
+                              <div class="uc-amount">16200 UC</div>
+                              <div class="uc-price">سعر خاص</div>
+                              <div class="bonus-text">+ أجزاء ماتريال + 2 كريستالة ميثيك + 2 ماتريال + حوالي 3000 شدة أو أكثر انت ورزقك 🔥🔥🔥🔥</div>
+                          </div>
+                      </div>
+
+                      <div style="margin: 1.5rem 0;">
+                          <input type="text" id="playerID" placeholder="أدخل معرف اللاعب الخاص بك" 
+                                 style="width: 100%; padding: 12px; border: 2px solid var(--secondary-blue); border-radius: 10px; background: var(--dark-bg); color: var(--text-light); font-size: 1rem;">
+                      </div>
+
+                      <button class="confirm-button" id="confirmOrder" disabled>
+                          <i class="fas fa-check"></i> تأكيد الطلب
+                      </button>
+                      <p style="color: #f4b942; font-size: 0.85rem; margin-top: 1rem; text-align: center; padding: 10px; background: rgba(244, 185, 66, 0.1); border-radius: 10px;">
+                          📱 بعد الضغط على تأكيد الطلب سيتم توجيهك لواتساب لإتمام عملية الشراء بأمان
+                      </p>
+                  </div>
+              </div>
+
+              <!-- eFootball Modal -->
+              <div id="efootballModal" class="modal">
+                  <div class="modal-content">
+                      <span class="close" onclick="closeEFootballModal()">&times;</span>
+                      <h2 class="modal-title">
+                          <i class="fas fa-futbol"></i> شحن كوين eFootball
+                      </h2>
+                      <p style="text-align: center; color: var(--text-gray); margin-bottom: 1.5rem;" class="center-text">
+                          اختر نوع الخدمة والعرض المناسب لك:
+                      </p>
+
+                      <!-- Service Type Selection -->
+                      <div style="margin: 1.5rem 0;">
+                          <h3 style="color: var(--accent-gold); margin-bottom: 1rem; text-align: center !important;">نوع الخدمة:</h3>
+                          <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                              <button class="service-type-btn active" data-efootball-service="regular">الأسعار العادية ⚽</button>
+                              <button class="service-type-btn" data-efootball-service="offers">عروض بيس موبايل 🔥</button>
+                          </div>
+                      </div>
+
+                      <!-- Regular Prices -->
+                      <div class="uc-options" id="efootballOptions">
+                          <div class="uc-option" data-coins="550" data-price="285 ج">
+                              <div class="uc-amount">550 كوين</div>
+                              <div class="uc-price">285 ج</div>
+                          </div>
+                          <div class="uc-option" data-coins="1040" data-price="485 ج">
+                              <div class="uc-amount">1040 كوين</div>
+                              <div class="uc-price">485 ج</div>
+                          </div>
+                          <div class="uc-option" data-coins="2130" data-price="975 ج">
+                              <div class="uc-amount">2130 كوين</div>
+                              <div class="uc-price">975 ج</div>
+                          </div>
+                          <div class="uc-option" data-coins="3250" data-price="1475 ج">
+                              <div class="uc-amount">3250 كوين</div>
+                              <div class="uc-price">1475 ج</div>
+                          </div>
+                          <div class="uc-option" data-coins="5700" data-price="2475 ج">
+                              <div class="uc-amount">5700 كوين</div>
+                              <div class="uc-price">2475 ج</div>
+                          </div>
+                      </div>
+
+                      <!-- Special Offers for eFootball Mobile -->
+                      <div class="uc-options" id="efootballOffersOptions" style="display: none;">
+                          <div class="uc-option special-offer" data-coins="260" data-price="80 ج">
+                              <div class="uc-amount">260 كوين</div>
+                              <div class="uc-price">80 ج 🔥</div>
+                              <div class="offer-details">عرض خاص - بيس موبايل</div>
+                          </div>
+                          <div class="uc-option special-offer" data-coins="840" data-price="280 ج">
+                              <div class="uc-amount">840 كوين</div>
+                              <div class="uc-price">280 ج ⚡</div>
+                              <div class="offer-details">عرض خاص - بيس موبايل</div>
+                          </div>
+                          <div class="uc-option prosperity-offer" data-coins="150" data-price="200 ج" data-bonus="مورينيو">
+                              <div class="uc-amount">150 كوين</div>
+                              <div class="uc-price">200 ج 🌟</div>
+                              <div class="bonus-text">+ مورينيو 🔥</div>
+                          </div>
+                          <div class="uc-option prosperity-offer" data-coins="50" data-price="60 ج" data-bonus="هنري">
+                              <div class="uc-amount">50 كوين</div>
+                              <div class="uc-price">60 ج ⭐</div>
+                              <div class="bonus-text">+ هنري 🎯</div>
+                          </div>
+                          <div class="uc-option prosperity-offer" data-coins="100" data-price="145 ج" data-bonus="لاعب">
+                              <div class="uc-amount">100 كوين</div>
+                              <div class="uc-price">145 ج 💫</div>
+                              <div class="bonus-text">+ لاعب 🏆</div>
+                          </div>
+                      </div>
+
+                      <div style="margin: 1.5rem 0;">
+                          <input type="text" id="efootballPlayerID" placeholder="أدخل معرف اللاعب الخاص بك" 
+                                 style="width: 100%; padding: 12px; border: 2px solid var(--secondary-blue); border-radius: 10px; background: var(--dark-bg); color: var(--text-light); font-size: 1rem;">
+                      </div>
+
+                      <button class="confirm-button" id="confirmEFootballOrder" disabled>
+                          <i class="fas fa-check"></i> تأكيد الطلب
+                      </button>
+                      <p style="color: #f4b942; font-size: 0.85rem; margin-top: 1rem; text-align: center; padding: 10px; background: rgba(244, 185, 66, 0.1); border-radius: 10px;">
+                          📱 بعد الضغط على تأكيد الطلب سيتم توجيهك لواتساب لإتمام عملية الشراء بأمان
+                      </p>
+                  </div>
+              </div>
+
+              <!-- PUBG Korea Modal -->
+              <div id="pubgKoreaModal" class="modal">
+                  <div class="modal-content">
+                      <span class="close" onclick="closePUBGKoreaModal()">&times;</span>
+                      <h2 class="modal-title">
+                          <i class="fas fa-crosshairs"></i> شحن شدات PUBG Korea 🔥
+                      </h2>
+                      <p style="text-align: center; color: var(--text-gray); margin-bottom: 1.5rem;" class="center-text">
+                          اختر كمية الشدات من PUBG الكورية:
+                      </p>
+
+                      <div class="uc-options" id="pubgKoreaOptions">
+                          <div class="uc-option" data-uc="190" data-price="170 ج">
+                              <div class="uc-amount">190 UC</div>
+                              <div class="uc-price">170 ج</div>
+                          </div>
+                          <div class="uc-option" data-uc="310" data-price="280 ج">
+                              <div class="uc-amount">310 UC</div>
+                              <div class="uc-price">280 ج</div>
+                          </div>
+                          <div class="uc-option" data-uc="380" data-price="325 ج">
+                              <div class="uc-amount">380 UC</div>
+                              <div class="uc-price">325 ج</div>
+                          </div>
+                          <div class="uc-option" data-uc="660" data-price="500 ج">
+                              <div class="uc-amount">660 UC</div>
+                              <div class="uc-price">500 ج</div>
+                          </div>
+                          <div class="uc-option" data-uc="1320" data-price="990 ج">
+                              <div class="uc-amount">1320 UC</div>
+                              <div class="uc-price">990 ج</div>
+                          </div>
+                          <div class="uc-option" data-uc="1800" data-price="1200 ج">
+                              <div class="uc-amount">1800 UC</div>
+                              <div class="uc-price">1200 ج</div>
+                          </div>
+                          <div class="uc-option" data-uc="3850" data-price="2375 ج">
+                              <div class="uc-amount">3850 UC</div>
+                              <div class="uc-price">2375 ج</div>
+                          </div>
+                          <div class="uc-option" data-uc="8100" data-price="4500 ج">
+                              <div class="uc-amount">8100 UC</div>
+                              <div class="uc-price">4500 ج</div>
+                          </div>
+                          <div class="uc-option special-offer" data-uc="برايم بلاس كوريا" data-price="460 ج">
+                              <div class="uc-amount">برايم بلاس كوريا 🔥</div>
+                              <div class="uc-price">460 ج</div>
+                              <div class="offer-details">660 شدة + مميزات برايم بلاس كوريا الحصرية</div>
+                          </div>
+                      </div>
+
+                      <div style="margin: 1.5rem 0;">
+                          <input type="text" id="pubgKoreaPlayerID" placeholder="أدخل معرف اللاعب الخاص بك" 
+                                 style="width: 100%; padding: 12px; border: 2px solid var(--secondary-blue); border-radius: 10px; background: var(--dark-bg); color: var(--text-light); font-size: 1rem;">
+                      </div>
+
+                      <button class="confirm-button" id="confirmPUBGKoreaOrder" disabled>
+                          <i class="fas fa-check"></i> تأكيد الطلب
+                      </button>
+                      <p style="color: #f4b942; font-size: 0.85rem; margin-top: 1rem; text-align: center; padding: 10px; background: rgba(244, 185, 66, 0.1); border-radius: 10px;">
+                          📱 بعد الضغط على تأكيد الطلب سيتم توجيهك لواتساب لإتمام عملية الشراء بأمان
+                      </p>
+                  </div>
+              </div>
+
+              <!-- Free Fire Modal -->
+              <div id="freeFireModal" class="modal">
+                  <div class="modal-content">
+                      <span class="close" onclick="closeFreeFireModal()">&times;</span>
+                      <h2 class="modal-title">
+                          <i class="fas fa-gem"></i> شحن الماس Free Fire 🔥💎
+                      </h2>
+                      <p style="text-align: center; color: var(--text-gray); margin-bottom: 1.5rem;" class="center-text">
+                          اختر كمية الماس التي تريد شحنها - أسعار تخليص فري إيدي:
+                      </p>
+
+                      <div class="uc-options" id="freeFireOptions">
+                          <div class="uc-option" data-diamonds="110" data-price="65 ج">
+                              <div class="uc-amount">110 💎</div>
+                              <div class="uc-price">65 ج</div>
+                          </div>
+                          <div class="uc-option" data-diamonds="231" data-price="115 ج">
+                              <div class="uc-amount">231 💎</div>
+                              <div class="uc-price">115 ج</div>
+                          </div>
+                          <div class="uc-option" data-diamonds="340" data-price="170 ج">
+                              <div class="uc-amount">340 💎</div>
+                              <div class="uc-price">170 ج</div>
+                          </div>
+                          <div class="uc-option" data-diamonds="572" data-price="270 ج">
+                              <div class="uc-amount">572 💎</div>
+                              <div class="uc-price">270 ج</div>
+                          </div>
+                          <div class="uc-option" data-diamonds="1023" data-price="485 ج">
+                              <div class="uc-amount">1023 💎</div>
+                              <div class="uc-price">485 ج</div>
+                          </div>
+                          <div class="uc-option" data-diamonds="2000" data-price="880 ج">
+                              <div class="uc-amount">2000 💎</div>
+                              <div class="uc-price">880 ج</div>
+                          </div>
+                          <div class="uc-option" data-diamonds="2420" data-price="1050 ج">
+                              <div class="uc-amount">2420 💎</div>
+                              <div class="uc-price">1050 ج</div>
+                          </div>
+                      </div>
+
+                      <div style="margin: 1.5rem 0;">
+                          <input type="text" id="freeFirePlayerID" placeholder="أدخل معرف اللاعب الخاص بك" 
+                                 style="width: 100%; padding: 12px; border: 2px solid var(--secondary-blue); border-radius: 10px; background: var(--dark-bg); color: var(--text-light); font-size: 1rem;">
+                      </div>
+
+                      <button class="confirm-button" id="confirmFreeFireOrder" disabled>
+                          <i class="fas fa-check"></i> تأكيد الطلب
+                      </button>
+                      <p style="color: #f4b942; font-size: 0.85rem; margin-top: 1rem; text-align: center; padding: 10px; background: rgba(244, 185, 66, 0.1); border-radius: 10px;">
+                          📱 بعد الضغط على تأكيد الطلب سيتم توجيهك لواتساب لإتمام عملية الشراء بأمان
+                      </p>
+                  </div>
+              </div>
+
+              <!-- Social Media Modal -->
+              <div id="socialMediaModal" class="modal">
+                  <div class="modal-content">
+                      <span class="close" onclick="closeSocialMediaModal()">&times;</span>
+                      <h2 class="modal-title">
+                          <i class="fas fa-users"></i> خدمات السوشيال ميديا 📱
+                      </h2>
+                      <p style="text-align: center; color: var(--text-gray); margin-bottom: 1.5rem;" class="center-text">
+                          اختر المنصة والخدمة المطلوبة:
+                      </p>
+
+                      <!-- Platform Selection -->
+                      <div style="margin: 1.5rem 0;">
+                          <h3 style="color: var(--accent-gold); margin-bottom: 1rem; text-align: center !important;">اختر المنصة:</h3>
+                          <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                              <button class="service-type-btn active" data-platform="facebook">فيسبوك 📘</button>
+                              <button class="service-type-btn" data-platform="instagram">إنستجرام 📷</button>
+                              <button class="service-type-btn" data-platform="tiktok">تيك توك 🎵</button>
+                          </div>
+                      </div>
+
+                      <!-- Facebook Services -->
+                      <div class="uc-options" id="facebookServices">
+                          <div class="uc-option" data-service="fb-followers" data-min="1000" data-price="145 ج / 1000" style="position: relative;">
+                              <div style="position: absolute; top: 8px; right: 8px; background: var(--accent-gold); color: var(--primary-blue); padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700;">حد أدنى: 1000</div>
+                              <div class="uc-amount" style="margin-top: 15px;">متابعين صفحات فيسبوك</div>
+                              <div class="uc-price">145 ج لكل 1000</div>
+                          </div>
+                          <div class="uc-option" data-service="fb-likes" data-min="1000" data-price="290 ج / 1000" style="position: relative;">
+                              <div style="position: absolute; top: 8px; right: 8px; background: var(--accent-gold); color: var(--primary-blue); padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700;">حد أدنى: 1000</div>
+                              <div class="uc-amount" style="margin-top: 15px;">إعجابات صفحات فيسبوك</div>
+                              <div class="uc-price">290 ج لكل 1000</div>
+                              <div class="offer-details">اختيار الإيموجي متاح</div>
+                          </div>
+                          <div class="uc-option" data-service="fb-comments" data-min="100" data-price="160 ج / 100" style="position: relative;">
+                              <div style="position: absolute; top: 8px; right: 8px; background: var(--accent-gold); color: var(--primary-blue); padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700;">حد أدنى: 100</div>
+                              <div class="uc-amount" style="margin-top: 15px;">تعليقات فيسبوك</div>
+                              <div class="uc-price">160 ج لكل 100</div>
+                              <div class="offer-details">مصريين - حسابات عربية نشطة</div>
+                          </div>
+                          <div class="uc-option" data-service="fb-views" data-min="1000" data-price="155 ج / 10000" style="position: relative;">
+                              <div style="position: absolute; top: 8px; right: 8px; background: var(--accent-gold); color: var(--primary-blue); padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700;">حد أدنى: 1000</div>
+                              <div class="uc-amount" style="margin-top: 15px;">مشاهدات فيديو فيسبوك</div>
+                              <div class="uc-price">155 ج لكل 10 آلاف</div>
+                          </div>
+                          <div class="uc-option" data-service="fb-group-members" data-min="1000" data-price="385 ج / 1000" style="position: relative;">
+                              <div style="position: absolute; top: 8px; right: 8px; background: var(--accent-gold); color: var(--primary-blue); padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700;">حد أدنى: 1000</div>
+                              <div class="uc-amount" style="margin-top: 15px;">أعضاء جروبات فيسبوك</div>
+                              <div class="uc-price">385 ج لكل 1000</div>
+                              <div class="offer-details">مصريين - حسابات عربية نشطة</div>
+                          </div>
+                      </div>
+
+                      <!-- Instagram Services -->
+                      <div class="uc-options" id="instagramServices" style="display: none;">
+                          <div class="uc-option" data-service="ig-followers" data-min="1000" data-price="430 ج / 1000" style="position: relative;">
+                              <div style="position: absolute; top: 8px; right: 8px; background: var(--accent-gold); color: var(--primary-blue); padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700;">حد أدنى: 1000</div>
+                              <div class="uc-amount" style="margin-top: 15px;">متابعين إنستجرام</div>
+                              <div class="uc-price">430 ج لكل 1000</div>
+                          </div>
+                          <div class="uc-option" data-service="ig-likes" data-min="1000" data-price="250 ج / 1000" style="position: relative;">
+                              <div style="position: absolute; top: 8px; right: 8px; background: var(--accent-gold); color: var(--primary-blue); padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700;">حد أدنى: 1000</div>
+                              <div class="uc-amount" style="margin-top: 15px;">لايكات إنستجرام</div>
+                              <div class="uc-price">250 ج لكل 1000</div>
+                          </div>
+                          <div class="uc-option" data-service="ig-comments" data-min="100" data-price="160 ج / 100" style="position: relative;">
+                              <div style="position: absolute; top: 8px; right: 8px; background: var(--accent-gold); color: var(--primary-blue); padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700;">حد أدنى: 100</div>
+                              <div class="uc-amount" style="margin-top: 15px;">تعليقات إنستجرام</div>
+                              <div class="uc-price">160 ج لكل 100</div>
+                              <div class="offer-details">مصريين - حسابات عربية نشطة</div>
+                          </div>
+                          <div class="uc-option" data-service="ig-views" data-min="10000" data-price="110 ج / 10000" style="position: relative;">
+                              <div style="position: absolute; top: 8px; right: 8px; background: var(--accent-gold); color: var(--primary-blue); padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700;">حد أدنى: 10K</div>
+                              <div class="uc-amount" style="margin-top: 15px;">مشاهدات فيديو/ريلز إنستجرام</div>
+                              <div class="uc-price">110 ج لكل 10 آلاف</div>
+                          </div>
+                      </div>
+
+                      <!-- TikTok Services -->
+                      <div class="uc-options" id="tiktokServices" style="display: none;">
+                          <div class="uc-option" data-service="tt-followers-random" data-min="1000" data-price="165 ج / 1000" style="position: relative;">
+                              <div style="position: absolute; top: 8px; right: 8px; background: var(--accent-gold); color: var(--primary-blue); padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700;">حد أدنى: 1000</div>
+                              <div class="uc-amount" style="margin-top: 15px;">متابعين تيك توك (حسابات عشوائي)</div>
+                              <div class="uc-price">165 ج لكل 1000</div>
+                          </div>
+                          <div class="uc-option" data-service="tt-followers-arab" data-min="1000" data-price="255 ج / 1000" style="position: relative;">
+                              <div style="position: absolute; top: 8px; right: 8px; background: var(--accent-gold); color: var(--primary-blue); padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700;">حد أدنى: 1000</div>
+                              <div class="uc-amount" style="margin-top: 15px;">متابعين تيك توك (مصريين - حسابات عربية نشطة)</div>
+                              <div class="uc-price">255 ج لكل 1000</div>
+                              <div class="offer-details">يوصل من ساعة لـ 48 ساعة</div>
+                          </div>
+                          <div class="uc-option" data-service="tt-views" data-min="10000" data-price="80 ج / 100000" style="position: relative;">
+                              <div style="position: absolute; top: 8px; right: 8px; background: var(--accent-gold); color: var(--primary-blue); padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700;">حد أدنى: 10K</div>
+                              <div class="uc-amount" style="margin-top: 15px;">مشاهدات تيك توك (جودة عالية)</div>
+                              <div class="uc-price">80 ج لكل 100 ألف</div>
+                          </div>
+                          <div class="uc-option" data-service="tt-likes" data-min="1000" data-price="95 ج / 10000" style="position: relative;">
+                              <div style="position: absolute; top: 8px; right: 8px; background: var(--accent-gold); color: var(--primary-blue); padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700;">حد أدنى: 1000</div>
+                              <div class="uc-amount" style="margin-top: 15px;">لايكات تيك توك</div>
+                              <div class="uc-price">95 ج لكل 10 آلاف</div>
+                          </div>
+                      </div>
+
+                      <!-- Input Fields -->
+                      <div style="margin: 1.5rem 0;">
+                          <input type="text" id="socialAccountLink" placeholder="رابط الحساب أو المنشور" 
+                                 style="width: 100%; padding: 12px; border: 2px solid var(--secondary-blue); border-radius: 10px; background: var(--dark-bg); color: var(--text-light); font-size: 1rem; margin-bottom: 1rem;">
+                          <input type="number" id="socialQuantity" placeholder="الكمية المطلوبة" 
+                                 style="width: 100%; padding: 12px; border: 2px solid var(--secondary-blue); border-radius: 10px; background: var(--dark-bg); color: var(--text-light); font-size: 1rem;">
+                      </div>
+
+                      <button class="confirm-button" id="confirmSocialOrder" disabled>
+                          <i class="fas fa-check"></i> تأكيد الطلب
+                      </button>
+                      <p style="color: #f4b942; font-size: 0.85rem; margin-top: 1rem; text-align: center; padding: 10px; background: rgba(244, 185, 66, 0.1); border-radius: 10px;">
+                          📱 بعد الضغط على تأكيد الطلب سيتم توجيهك لواتساب لإتمام عملية الشراء بأمان
+                      </p>
+                  </div>
+              </div>
+
+              <script>
+                  // Global variables
+                  let selectedUC = null;
+                  let selectedPrice = null;
+                  let currentService = 'id';
+                  let selectedServiceType = 'شحن بالآيدي';
+
+                  // eFootball variables
+                  let selectedCoins = null;
+                  let selectedCoinPrice = null;
+
+                  // PUBG Korea variables
+                  let selectedKoreaUC = null;
+                  let selectedKoreaPrice = null;
+
+                  // Create floating particles
+                  function createParticles() {
+                      const particlesContainer = document.getElementById('particles');
+                      const particleCount = 50;
+
+                      for (let i = 0; i < particleCount; i++) {
+                          const particle = document.createElement('div');
+                          particle.className = 'particle';
+                          particle.style.left = Math.random() * 100 + '%';
+                          particle.style.animationDelay = Math.random() * 6 + 's';
+                          particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                          particlesContainer.appendChild(particle);
+                      }
+                  }
+
+                  // Initialize particles on page load
+                  document.addEventListener('DOMContentLoaded', function() {
+                      createParticles();
+                      setupUCOptionListeners();
+                  });
+
+                  // Open PUBG Modal
+                  function openPUBGModal() {
+                      document.getElementById('pubgModal').style.display = 'block';
+                      document.body.style.overflow = 'hidden';
+                  }
+
+                  // Close modal functionality
+                  document.querySelector('.close').onclick = function() {
+                      document.getElementById('pubgModal').style.display = 'none';
+                      document.body.style.overflow = 'auto';
+                      resetModal();
+                  }
+
+                  // Close modal when clicking outside
+                  window.onclick = function(event) {
+                      const modal = document.getElementById('pubgModal');
+                      if (event.target == modal) {
+                          modal.style.display = 'none';
+                          document.body.style.overflow = 'auto';
+                          resetModal();
+                      }
+                  }
+
+                  // Reset modal state
+                  function resetModal() {
+                      selectedUC = null;
+                      selectedPrice = null;
+                      document.getElementById('playerID').value = '';
+                      document.getElementById('confirmOrder').disabled = true;
+
+                      // Remove selected class from all options
+                      document.querySelectorAll('.uc-option').forEach(option => {
+                          option.classList.remove('selected');
+                      });
+                  }
+
+                  // Handle service type selection
+                  document.querySelectorAll('.service-type-btn').forEach(btn => {
+                      btn.addEventListener('click', function() {
+                          // Remove active class from all service buttons
+                          document.querySelectorAll('.service-type-btn').forEach(b => {
+                              b.classList.remove('active');
+                          });
+
+                          // Add active class to clicked button
+                          this.classList.add('active');
+
+                          // Hide all option containers
+                          document.querySelectorAll('[id^="ucOptions"]').forEach(container => {
+                              container.style.display = 'none';
+                          });
+
+                          // Show selected service container
+                          const service = this.dataset.service;
+                          if (service) {
+                              currentService = service;
+                              selectedServiceType = this.textContent;
+                              
+                              // Show appropriate container based on service type
+                              if (service === 'id') {
+                                  document.getElementById('ucOptionsId').style.display = 'grid';
+                              } else if (service === 'account') {
+                                  document.getElementById('ucOptionsAccount').style.display = 'grid';
+                              } else if (service === 'prime') {
+                                  document.getElementById('ucOptionsPrime').style.display = 'grid';
+                              } else if (service === 'prosperity') {
+                                  document.getElementById('ucOptionsProsperity').style.display = 'grid';
+                              }
+                          }
+
+                          // Reset selection
+                          resetModal();
+                          setupUCOptionListeners();
+                      });
+                  });
+
+                  // Setup UC option listeners
+                  function setupUCOptionListeners() {
+                      document.querySelectorAll('.uc-option').forEach(option => {
+                          option.replaceWith(option.cloneNode(true));
+                      });
+
+                      document.querySelectorAll('.uc-option').forEach(option => {
+                          option.addEventListener('click', function() {
+                              // Remove selected class from all visible options
+                              const visibleContainer = document.querySelector('[id^="ucOptions"][style*="grid"], [id^="ucOptions"]:not([style*="none"])');
+                              if (visibleContainer) {
+                                  visibleContainer.querySelectorAll('.uc-option').forEach(opt => {
+                                      opt.classList.remove('selected');
+                                  });
+                              }
+
+                              // Add selected class to clicked option
+                              this.classList.add('selected');
+
+                              // Store selected values
+                              selectedUC = this.dataset.uc;
+                              selectedPrice = this.dataset.price;
+
+                              // Check if we can enable the confirm button
+                              checkConfirmButton();
+                          });
+                      });
+                  }
+
+                  // Monitor player ID input
+                  document.getElementById('playerID').addEventListener('input', function() {
+                      checkConfirmButton();
+                  });
+
+                  // Check if confirm button should be enabled
+                  function checkConfirmButton() {
+                      const playerID = document.getElementById('playerID').value.trim();
+                      const confirmButton = document.getElementById('confirmOrder');
+
+                      if (selectedUC && selectedPrice && playerID.length > 0) {
+                          confirmButton.disabled = false;
+                      } else {
+                          confirmButton.disabled = true;
+                      }
+                  }
+
+                  // Handle order confirmation
+                  document.getElementById('confirmOrder').addEventListener('click', function() {
+                      const playerID = document.getElementById('playerID').value.trim();
+
+                      if (!selectedUC || !selectedPrice || !playerID) {
+                          alert('الرجاء اختيار كمية الشدات وإدخال معرف اللاعب');
+                          return;
+                      }
+
+                      // Get bonus info if prosperity offer
+                      let bonusInfo = '';
+                      const selectedOption = document.querySelector('.uc-option.selected');
+                      if (selectedOption && selectedOption.dataset.bonus) {
+                          bonusInfo = `\n• المكافآت: ${selectedOption.dataset.bonus}`;
+                      }
+
+                      // Create WhatsApp message
+                      const message = `🎮 *طلب شحن شدات PUBG Mobile*\n\n` +
+                                    `📊 *تفاصيل الطلب:*\n` +
+                                    `• نوع الخدمة: ${selectedServiceType}\n` +
+                                    `• كمية الشدات: ${selectedUC} UC\n` +
+                                    `• السعر: ${selectedPrice}\n` +
+                                    `• معرف اللاعب: ${playerID}${bonusInfo}\n\n` +
+                                    `🏪 *المتجر:* Batal Electronic Essentials\n` +
+                                    `📞 *للتواصل:* 201122877573\n\n` +
+                                    `الرجاء معالجة هذا الطلب. شكراً لكم! 🙏`;
+
+                      // Encode message for WhatsApp URL
+                      const encodedMessage = encodeURIComponent(message);
+                      const whatsappURL = `https://wa.me/201122877573?text=${encodedMessage}`;
+
+                      // Open WhatsApp
+                      window.open(whatsappURL, '_blank');
+
+                      // Close modal
+                      document.getElementById('pubgModal').style.display = 'none';
+                      document.body.style.overflow = 'auto';
+                      resetModal();
+                  });
+
+                  // Add smooth scrolling for internal links
+                  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                      anchor.addEventListener('click', function (e) {
+                          e.preventDefault();
+                          const target = document.querySelector(this.getAttribute('href'));
+                          if (target) {
+                              target.scrollIntoView({
+                                  behavior: 'smooth',
+                                  block: 'start'
+                              });
+                          }
+                      });
+                  });
+
+                  // Add loading animation on page load
+                  window.addEventListener('load', function() {
+                      document.body.classList.add('loaded');
+                  });
+
+                  // Add parallax effect on scroll
+                  window.addEventListener('scroll', function() {
+                      const scrolled = window.pageYOffset;
+                      const rate = scrolled * -0.5;
+                      const bgAnimation = document.querySelector('.bg-animation');
+                      if (bgAnimation) {
+                          bgAnimation.style.transform = `translateY(${rate}px)`;
+                      }
+                  });
+
+                  // Add hover sound effect simulation (visual feedback)
+                  document.querySelectorAll('.game-card, .play-button, .contact-button').forEach(element => {
+                      element.addEventListener('mouseenter', function() {
+                          this.style.transition = 'all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                      });
+
+                      element.addEventListener('mouseleave', function() {
+                          this.style.transition = 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                      });
+                  });
+
+                  // Keyboard navigation for modal
+                  document.addEventListener('keydown', function(e) {
+                      const modal = document.getElementById('pubgModal');
+                      if (modal.style.display === 'block') {
+                          if (e.key === 'Escape') {
+                              modal.style.display = 'none';
+                              document.body.style.overflow = 'auto';
+                              resetModal();
+                          }
+                      }
+                  });
+
+                  // Add ripple effect to buttons
+                  function createRipple(event) {
+                      const button = event.currentTarget;
+                      const ripple = document.createElement('span');
+                      const rect = button.getBoundingClientRect();
+                      const size = Math.max(rect.width, rect.height);
+                      const x = event.clientX - rect.left - size / 2;
+                      const y = event.clientY - rect.top - size / 2;
+
+                      ripple.style.width = ripple.style.height = size + 'px';
+                      ripple.style.left = x + 'px';
+                      ripple.style.top = y + 'px';
+                      ripple.classList.add('ripple');
+
+                      button.appendChild(ripple);
+
+                      setTimeout(() => {
+                          ripple.remove();
+                      }, 600);
+                  }
+
+                  // Apply ripple effect to buttons
+                  document.querySelectorAll('.play-button, .confirm-button, .contact-button').forEach(button => {
+                      button.addEventListener('click', createRipple);
+                  });
+
+                  // eFootball Modal Functions
+                  function openEFootballModal() {
+                      document.getElementById('efootballModal').style.display = 'block';
+                      document.body.style.overflow = 'hidden';
+                      setupEFootballListeners();
+                  }
+
+                  function closeEFootballModal() {
+                      document.getElementById('efootballModal').style.display = 'none';
+                      document.body.style.overflow = 'auto';
+                      resetEFootballModal();
+                  }
+
+                  // Setup eFootball option listeners
+                  function setupEFootballListeners() {
+                      // Handle service type selection for eFootball
+                      document.querySelectorAll('[data-efootball-service]').forEach(btn => {
+                          btn.addEventListener('click', function() {
+                              // Remove active class from all eFootball service buttons
+                              document.querySelectorAll('[data-efootball-service]').forEach(b => {
+                                  b.classList.remove('active');
+                              });
+
+                              // Add active class to clicked button
+                              this.classList.add('active');
+
+                              // Hide all eFootball option containers
+                              document.getElementById('efootballOptions').style.display = 'none';
+                              document.getElementById('efootballOffersOptions').style.display = 'none';
+
+                              // Show selected service container
+                              const service = this.dataset.efootballService;
+                              if (service === 'regular') {
+                                  document.getElementById('efootballOptions').style.display = 'grid';
+                              } else if (service === 'offers') {
+                                  document.getElementById('efootballOffersOptions').style.display = 'grid';
+                              }
+
+                              // Reset selection
+                              resetEFootballModal();
+                              setupEFootballOptionListeners();
+                          });
+                      });
+
+                      setupEFootballOptionListeners();
+
+                      // Monitor player ID input for eFootball
+                      document.getElementById('efootballPlayerID').addEventListener('input', function() {
+                          checkEFootballConfirmButton();
+                      });
+
+                      // Handle eFootball order confirmation
+                      document.getElementById('confirmEFootballOrder').addEventListener('click', function() {
+                          const playerID = document.getElementById('efootballPlayerID').value.trim();
+
+                          if (!selectedCoins || !selectedCoinPrice || !playerID) {
+                              alert('الرجاء اختيار كمية الكوين وإدخال معرف اللاعب');
+                              return;
+                          }
+
+                          // Get bonus info if offer
+                          let bonusInfo = '';
+                          const selectedOption = document.querySelector('.uc-option.selected');
+                          if (selectedOption && selectedOption.dataset.bonus) {
+                              bonusInfo = `\n• المكافآت: ${selectedOption.dataset.bonus}`;
+                          }
+
+                          // Create WhatsApp message for eFootball
+                          const message = `⚽ *طلب شحن كوين eFootball*\n\n` +
+                                        `📊 *تفاصيل الطلب:*\n` +
+                                        `• اللعبة: eFootball (بيس)\n` +
+                                        `• كمية الكوين: ${selectedCoins} كوين\n` +
+                                        `• السعر: ${selectedCoinPrice}\n` +
+                                        `• معرف اللاعب: ${playerID}${bonusInfo}\n\n` +
+                                        `🏪 *المتجر:* Batal Electronic Essentials\n` +
+                                        `📞 *للتواصل:* 201122877573\n\n` +
+                                        `الرجاء معالجة هذا الطلب. شكراً لكم! 🙏`;
+
+                          // Encode message for WhatsApp URL
+                          const encodedMessage = encodeURIComponent(message);
+                          const whatsappURL = `https://wa.me/201122877573?text=${encodedMessage}`;
+
+                          // Open WhatsApp
+                          window.open(whatsappURL, '_blank');
+
+                          // Close modal
+                          closeEFootballModal();
+                      });
+                  }
+
+                  // Setup eFootball option listeners
+                  function setupEFootballOptionListeners() {
+                      // Regular options
+                      document.querySelectorAll('#efootballOptions .uc-option').forEach(option => {
+                          option.addEventListener('click', function() {
+                              // Remove selected class from all visible eFootball options
+                              document.querySelectorAll('#efootballOptions .uc-option, #efootballOffersOptions .uc-option').forEach(opt => {
+                                  opt.classList.remove('selected');
+                              });
+
+                              // Add selected class to clicked option
+                              this.classList.add('selected');
+
+                              // Store selected values
+                              selectedCoins = this.dataset.coins;
+                              selectedCoinPrice = this.dataset.price;
+
+                              // Check if we can enable the confirm button
+                              checkEFootballConfirmButton();
+                          });
+                      });
+
+                      // Special offer options
+                      document.querySelectorAll('#efootballOffersOptions .uc-option').forEach(option => {
+                          option.addEventListener('click', function() {
+                              // Remove selected class from all visible eFootball options
+                              document.querySelectorAll('#efootballOptions .uc-option, #efootballOffersOptions .uc-option').forEach(opt => {
+                                  opt.classList.remove('selected');
+                              });
+
+                              // Add selected class to clicked option
+                              this.classList.add('selected');
+
+                              // Store selected values
+                              selectedCoins = this.dataset.coins;
+                              selectedCoinPrice = this.dataset.price;
+
+                              // Check if we can enable the confirm button
+                              checkEFootballConfirmButton();
+                          });
+                      });
+                  }
+
+                  // Check if eFootball confirm button should be enabled
+                  function checkEFootballConfirmButton() {
+                      const playerID = document.getElementById('efootballPlayerID').value.trim();
+                      const confirmButton = document.getElementById('confirmEFootballOrder');
+
+                      if (selectedCoins && selectedCoinPrice && playerID.length > 0) {
+                          confirmButton.disabled = false;
+                      } else {
+                          confirmButton.disabled = true;
+                      }
+                  }
+
+                  // Reset eFootball modal state
+                  function resetEFootballModal() {
+                      selectedCoins = null;
+                      selectedCoinPrice = null;
+                      document.getElementById('efootballPlayerID').value = '';
+                      document.getElementById('confirmEFootballOrder').disabled = true;
+
+                      // Remove selected class from all eFootball options
+                      document.querySelectorAll('#efootballOptions .uc-option, #efootballOffersOptions .uc-option').forEach(option => {
+                          option.classList.remove('selected');
+                      });
+                  }
+
+                  // Close eFootball modal when clicking outside  
+                  window.addEventListener('click', function(event) {
+                      const efootballModal = document.getElementById('efootballModal');
+                      if (event.target == efootballModal) {
+                          closeEFootballModal();
+                      }
+                  });
+
+                  // Add eFootball modal to keyboard navigation
+                  document.addEventListener('keydown', function(e) {
+                      const efootballModal = document.getElementById('efootballModal');
+                      if (efootballModal.style.display === 'block') {
+                          if (e.key === 'Escape') {
+                              closeEFootballModal();
+                          }
+                      }
+                  });
+
+                  // PUBG Korea Modal Functions
+                  function openPUBGKoreaModal() {
+                      document.getElementById('pubgKoreaModal').style.display = 'block';
+                      document.body.style.overflow = 'hidden';
+                      setupPUBGKoreaListeners();
+                  }
+
+                  function closePUBGKoreaModal() {
+                      document.getElementById('pubgKoreaModal').style.display = 'none';
+                      document.body.style.overflow = 'auto';
+                      resetPUBGKoreaModal();
+                  }
+
+                  // Setup PUBG Korea option listeners
+                  function setupPUBGKoreaListeners() {
+                      document.querySelectorAll('#pubgKoreaOptions .uc-option').forEach(option => {
+                          option.addEventListener('click', function() {
+                              // Remove selected class from all PUBG Korea options
+                              document.querySelectorAll('#pubgKoreaOptions .uc-option').forEach(opt => {
+                                  opt.classList.remove('selected');
+                              });
+
+                              // Add selected class to clicked option
+                              this.classList.add('selected');
+
+                              // Store selected values
+                              selectedKoreaUC = this.dataset.uc;
+                              selectedKoreaPrice = this.dataset.price;
+
+                              // Check if we can enable the confirm button
+                              checkPUBGKoreaConfirmButton();
+                          });
+                      });
+
+                      // Monitor player ID input for PUBG Korea
+                      document.getElementById('pubgKoreaPlayerID').addEventListener('input', function() {
+                          checkPUBGKoreaConfirmButton();
+                      });
+
+                      // Handle PUBG Korea order confirmation
+                      document.getElementById('confirmPUBGKoreaOrder').addEventListener('click', function() {
+                          const playerID = document.getElementById('pubgKoreaPlayerID').value.trim();
+
+                          if (!selectedKoreaUC || !selectedKoreaPrice || !playerID) {
+                              alert('الرجاء اختيار كمية الشدات وإدخال معرف اللاعب');
+                              return;
+                          }
+
+                          // Create WhatsApp message for PUBG Korea
+                          const message = `🎮 *طلب شحن شدات PUBG Korea* 🔥\n\n` +
+                                        `📊 *تفاصيل الطلب:*\n` +
+                                        `• اللعبة: PUBG Korea (النسخة الكورية)\n` +
+                                        `• كمية الشدات: ${selectedKoreaUC} UC\n` +
+                                        `• السعر: ${selectedKoreaPrice}\n` +
+                                        `• معرف اللاعب: ${playerID}\n\n` +
+                                        `🏪 *المتجر:* Batal Electronic Essentials\n` +
+                                        `📞 *للتواصل:* 201122877573\n\n` +
+                                        `الرجاء معالجة هذا الطلب. شكراً لكم! 🙏`;
+
+                          // Encode message for WhatsApp URL
+                          const encodedMessage = encodeURIComponent(message);
+                          const whatsappURL = `https://wa.me/201122877573?text=${encodedMessage}`;
+
+                          // Open WhatsApp
+                          window.open(whatsappURL, '_blank');
+
+                          // Close modal
+                          closePUBGKoreaModal();
+                      });
+                  }
+
+                  // Check if PUBG Korea confirm button should be enabled
+                  function checkPUBGKoreaConfirmButton() {
+                      const playerID = document.getElementById('pubgKoreaPlayerID').value.trim();
+                      const confirmButton = document.getElementById('confirmPUBGKoreaOrder');
+
+                      if (selectedKoreaUC && selectedKoreaPrice && playerID.length > 0) {
+                          confirmButton.disabled = false;
+                      } else {
+                          confirmButton.disabled = true;
+                      }
+                  }
+
+                  // Reset PUBG Korea modal state
+                  function resetPUBGKoreaModal() {
+                      selectedKoreaUC = null;
+                      selectedKoreaPrice = null;
+                      document.getElementById('pubgKoreaPlayerID').value = '';
+                      document.getElementById('confirmPUBGKoreaOrder').disabled = true;
+
+                      // Remove selected class from all PUBG Korea options
+                      document.querySelectorAll('#pubgKoreaOptions .uc-option').forEach(option => {
+                          option.classList.remove('selected');
+                      });
+                  }
+
+                  // Close PUBG Korea modal when clicking outside  
+                  window.addEventListener('click', function(event) {
+                      const pubgKoreaModal = document.getElementById('pubgKoreaModal');
+                      if (event.target == pubgKoreaModal) {
+                          closePUBGKoreaModal();
+                      }
+                  });
+
+                  // Add PUBG Korea modal to keyboard navigation
+                  document.addEventListener('keydown', function(e) {
+                      const pubgKoreaModal = document.getElementById('pubgKoreaModal');
+                      if (pubgKoreaModal.style.display === 'block') {
+                          if (e.key === 'Escape') {
+                              closePUBGKoreaModal();
+                          }
+                      }
+                  });
+
+                  // Free Fire variables
+                  let selectedDiamonds = null;
+                  let selectedDiamondPrice = null;
+
+                  // Social Media variables
+                  let selectedSocialService = null;
+                  let selectedSocialPrice = null;
+                  let selectedSocialMin = null;
+                  let currentPlatform = 'facebook';
+
+                  // Free Fire Modal Functions
+                  function openFreeFireModal() {
+                      document.getElementById('freeFireModal').style.display = 'block';
+                      document.body.style.overflow = 'hidden';
+                      setupFreeFireListeners();
+                  }
+
+                  function closeFreeFireModal() {
+                      document.getElementById('freeFireModal').style.display = 'none';
+                      document.body.style.overflow = 'auto';
+                      resetFreeFireModal();
+                  }
+
+                  // Setup Free Fire option listeners
+                  function setupFreeFireListeners() {
+                      document.querySelectorAll('#freeFireOptions .uc-option').forEach(option => {
+                          option.addEventListener('click', function() {
+                              // Remove selected class from all Free Fire options
+                              document.querySelectorAll('#freeFireOptions .uc-option').forEach(opt => {
+                                  opt.classList.remove('selected');
+                              });
+
+                              // Add selected class to clicked option
+                              this.classList.add('selected');
+
+                              // Store selected values
+                              selectedDiamonds = this.dataset.diamonds;
+                              selectedDiamondPrice = this.dataset.price;
+
+                              // Check if we can enable the confirm button
+                              checkFreeFireConfirmButton();
+                          });
+                      });
+
+                      // Monitor player ID input for Free Fire
+                      document.getElementById('freeFirePlayerID').addEventListener('input', function() {
+                          checkFreeFireConfirmButton();
+                      });
+
+                      // Handle Free Fire order confirmation
+                      document.getElementById('confirmFreeFireOrder').addEventListener('click', function() {
+                          const playerID = document.getElementById('freeFirePlayerID').value.trim();
+
+                          if (!selectedDiamonds || !selectedDiamondPrice || !playerID) {
+                              alert('الرجاء اختيار كمية الماس وإدخال معرف اللاعب');
+                              return;
+                          }
+
+                          // Create WhatsApp message for Free Fire
+                          const message = `💎 *طلب شحن الماس Free Fire* 🔥\n\n` +
+                                        `📊 *تفاصيل الطلب:*\n` +
+                                        `• اللعبة: Free Fire\n` +
+                                        `• كمية الماس: ${selectedDiamonds} 💎\n` +
+                                        `• السعر: ${selectedDiamondPrice}\n` +
+                                        `• معرف اللاعب: ${playerID}\n` +
+                                        `• نوع الخدمة: أسعار تخليص فري إيدي 🆔💎\n\n` +
+                                        `🏪 *المتجر:* Batal Electronic Essentials\n` +
+                                        `📞 *للتواصل:* 201122877573\n\n` +
+                                        `الرجاء معالجة هذا الطلب. شكراً لكم! 🙏`;
+
+                          // Encode message for WhatsApp URL
+                          const encodedMessage = encodeURIComponent(message);
+                          const whatsappURL = `https://wa.me/201122877573?text=${encodedMessage}`;
+
+                          // Open WhatsApp
+                          window.open(whatsappURL, '_blank');
+
+                          // Close modal
+                          closeFreeFireModal();
+                      });
+                  }
+
+                  // Check if Free Fire confirm button should be enabled
+                  function checkFreeFireConfirmButton() {
+                      const playerID = document.getElementById('freeFirePlayerID').value.trim();
+                      const confirmButton = document.getElementById('confirmFreeFireOrder');
+
+                      if (selectedDiamonds && selectedDiamondPrice && playerID.length > 0) {
+                          confirmButton.disabled = false;
+                      } else {
+                          confirmButton.disabled = true;
+                      }
+                  }
+
+                  // Reset Free Fire modal state
+                  function resetFreeFireModal() {
+                      selectedDiamonds = null;
+                      selectedDiamondPrice = null;
+                      document.getElementById('freeFirePlayerID').value = '';
+                      document.getElementById('confirmFreeFireOrder').disabled = true;
+
+                      // Remove selected class from all Free Fire options
+                      document.querySelectorAll('#freeFireOptions .uc-option').forEach(option => {
+                          option.classList.remove('selected');
+                      });
+                  }
+
+                  // Close Free Fire modal when clicking outside  
+                  window.addEventListener('click', function(event) {
+                      const freeFireModal = document.getElementById('freeFireModal');
+                      if (event.target == freeFireModal) {
+                          closeFreeFireModal();
+                      }
+                  });
+
+                  // Add Free Fire modal to keyboard navigation
+                  document.addEventListener('keydown', function(e) {
+                      const freeFireModal = document.getElementById('freeFireModal');
+                      if (freeFireModal.style.display === 'block') {
+                          if (e.key === 'Escape') {
+                              closeFreeFireModal();
+                          }
+                      }
+                  });
+
+                  // Social Media Modal Functions
+                  function openSocialMediaModal() {
+                      document.getElementById('socialMediaModal').style.display = 'block';
+                      document.body.style.overflow = 'hidden';
+                      setupSocialMediaListeners();
+                  }
+
+                  function closeSocialMediaModal() {
+                      document.getElementById('socialMediaModal').style.display = 'none';
+                      document.body.style.overflow = 'auto';
+                      resetSocialMediaModal();
+                  }
+
+                  // Setup Social Media listeners
+                  function setupSocialMediaListeners() {
+                      // Platform selection
+                      document.querySelectorAll('[data-platform]').forEach(btn => {
+                          btn.addEventListener('click', function() {
+                              // Remove active class from all platform buttons
+                              document.querySelectorAll('[data-platform]').forEach(b => {
+                                  b.classList.remove('active');
+                              });
+
+                              // Add active class to clicked button
+                              this.classList.add('active');
+
+                              // Hide all service containers
+                              document.getElementById('facebookServices').style.display = 'none';
+                              document.getElementById('instagramServices').style.display = 'none';
+                              document.getElementById('tiktokServices').style.display = 'none';
+
+                              // Show selected platform services
+                              currentPlatform = this.dataset.platform;
+                              if (currentPlatform === 'facebook') {
+                                  document.getElementById('facebookServices').style.display = 'grid';
+                              } else if (currentPlatform === 'instagram') {
+                                  document.getElementById('instagramServices').style.display = 'grid';
+                              } else if (currentPlatform === 'tiktok') {
+                                  document.getElementById('tiktokServices').style.display = 'grid';
+                              }
+
+                              // Reset selection
+                              resetSocialMediaModal();
+                              setupSocialServiceListeners();
+                          });
+                      });
+
+                      setupSocialServiceListeners();
+
+                      // Monitor inputs
+                      document.getElementById('socialAccountLink').addEventListener('input', checkSocialConfirmButton);
+                      document.getElementById('socialQuantity').addEventListener('input', checkSocialConfirmButton);
+
+                      // Handle order confirmation
+                      document.getElementById('confirmSocialOrder').addEventListener('click', function() {
+                          const accountLink = document.getElementById('socialAccountLink').value.trim();
+                          const quantity = document.getElementById('socialQuantity').value.trim();
+
+                          if (!selectedSocialService || !accountLink || !quantity) {
+                              alert('الرجاء اختيار الخدمة وإدخال رابط الحساب والكمية');
+                              return;
+                          }
+
+                          // Get service name
+                          const selectedOption = document.querySelector('.uc-option.selected');
+                          const serviceName = selectedOption.querySelector('.uc-amount').textContent;
+                          let platformName;
+                          if (currentPlatform === 'facebook') {
+                              platformName = 'فيسبوك';
+                          } else if (currentPlatform === 'instagram') {
+                              platformName = 'إنستجرام';
+                          } else if (currentPlatform === 'tiktok') {
+                              platformName = 'تيك توك';
+                          }
+
+                          // Create WhatsApp message
+                          const message = `📱 *طلب خدمات السوشيال ميديا*\n\n` +
+                                        `📊 *تفاصيل الطلب:*\n` +
+                                        `• المنصة: ${platformName}\n` +
+                                        `• الخدمة: ${serviceName}\n` +
+                                        `• السعر: ${selectedSocialPrice}\n` +
+                                        `• الكمية المطلوبة: ${quantity}\n` +
+                                        `• رابط الحساب/المنشور: ${accountLink}\n` +
+                                        `• الحد الأدنى: ${selectedSocialMin}\n\n` +
+                                        `🏪 *المتجر:* Batal Electronic Essentials\n` +
+                                        `📞 *للتواصل:* 201122877573\n\n` +
+                                        `الرجاء معالجة هذا الطلب. شكراً لكم! 🙏`;
+
+                          // Encode message for WhatsApp URL
+                          const encodedMessage = encodeURIComponent(message);
+                          const whatsappURL = `https://wa.me/201122877573?text=${encodedMessage}`;
+
+                          // Open WhatsApp
+                          window.open(whatsappURL, '_blank');
+
+                          // Close modal
+                          closeSocialMediaModal();
+                      });
+                  }
+
+                  function setupSocialServiceListeners() {
+                      let currentServices;
+                      if (currentPlatform === 'facebook') {
+                          currentServices = document.querySelectorAll('#facebookServices .uc-option');
+                      } else if (currentPlatform === 'instagram') {
+                          currentServices = document.querySelectorAll('#instagramServices .uc-option');
+                      } else if (currentPlatform === 'tiktok') {
+                          currentServices = document.querySelectorAll('#tiktokServices .uc-option');
+                      }
+
+                      currentServices.forEach(option => {
+                          option.addEventListener('click', function() {
+                              // Remove selected class from all current platform options
+                              currentServices.forEach(opt => {
+                                  opt.classList.remove('selected');
+                              });
+
+                              // Add selected class to clicked option
+                              this.classList.add('selected');
+
+                              // Store selected values
+                              selectedSocialService = this.dataset.service;
+                              selectedSocialPrice = this.dataset.price;
+                              selectedSocialMin = this.dataset.min;
+
+                              // Check if we can enable the confirm button
+                              checkSocialConfirmButton();
+                          });
+                      });
+                  }
+
+                  // Check if social media confirm button should be enabled
+                  function checkSocialConfirmButton() {
+                      const accountLink = document.getElementById('socialAccountLink').value.trim();
+                      const quantity = document.getElementById('socialQuantity').value.trim();
+                      const confirmButton = document.getElementById('confirmSocialOrder');
+
+                      if (selectedSocialService && accountLink && quantity && parseInt(quantity) >= parseInt(selectedSocialMin)) {
+                          confirmButton.disabled = false;
+                      } else {
+                          confirmButton.disabled = true;
+                      }
+                  }
+
+                  // Reset social media modal state
+                  function resetSocialMediaModal() {
+                      selectedSocialService = null;
+                      selectedSocialPrice = null;
+                      selectedSocialMin = null;
+                      document.getElementById('socialAccountLink').value = '';
+                      document.getElementById('socialQuantity').value = '';
+                      document.getElementById('confirmSocialOrder').disabled = true;
+
+                      // Remove selected class from all options
+                      document.querySelectorAll('#facebookServices .uc-option, #instagramServices .uc-option, #tiktokServices .uc-option').forEach(option => {
+                          option.classList.remove('selected');
+                      });
+                  }
+
+                  // Close social media modal when clicking outside  
+                  window.addEventListener('click', function(event) {
+                      const socialModal = document.getElementById('socialMediaModal');
+                      if (event.target == socialModal) {
+                          closeSocialMediaModal();
+                      }
+                  });
+
+                  // Add social media modal to keyboard navigation
+                  document.addEventListener('keydown', function(e) {
+                      const socialModal = document.getElementById('socialMediaModal');
+                      if (socialModal.style.display === 'block') {
+                          if (e.key === 'Escape') {
+                              closeSocialMediaModal();
+                          }
+                      }
+                  });
+              </script>
+          </body>
+          </html>
